@@ -1,6 +1,5 @@
-import { postgresIcon } from '../../../icons';
-import { BaseCoreComponent } from '../../BaseCoreComponent';
-
+import { postgresIcon } from "../../../icons";
+import { BaseCoreComponent } from "../../BaseCoreComponent";
 
 export class PostgresOutput extends BaseCoreComponent {
   constructor() {
@@ -12,7 +11,7 @@ export class PostgresOutput extends BaseCoreComponent {
       username: "",
       password: "",
       ifTableExists: "fail",
-      mode: "insert"
+      mode: "insert",
     };
     const form = {
       idPrefix: "component__form",
@@ -23,7 +22,7 @@ export class PostgresOutput extends BaseCoreComponent {
           id: "host",
           placeholder: "Enter database host",
           connection: "Postgres",
-          advanced: true
+          advanced: true,
         },
         {
           type: "input",
@@ -31,14 +30,14 @@ export class PostgresOutput extends BaseCoreComponent {
           id: "port",
           placeholder: "Enter database port",
           connection: "Postgres",
-          advanced: true
+          advanced: true,
         },
         {
           type: "input",
           label: "Database Name",
           id: "databaseName",
           connection: "Postgres",
-          placeholder: "Enter database name"
+          placeholder: "Enter database name",
         },
         {
           type: "input",
@@ -49,10 +48,11 @@ export class PostgresOutput extends BaseCoreComponent {
         },
         {
           type: "table",
-          label: "Table Name",
+          label: "表名",
+          // label: "Table Name",
           query: `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';`,
           id: "tableName",
-          placeholder: "Enter table name"
+          placeholder: "输入表名",
         },
         {
           type: "input",
@@ -60,7 +60,7 @@ export class PostgresOutput extends BaseCoreComponent {
           id: "username",
           placeholder: "Enter username",
           connection: "Postgres",
-          advanced: true
+          advanced: true,
         },
         {
           type: "input",
@@ -69,7 +69,7 @@ export class PostgresOutput extends BaseCoreComponent {
           id: "password",
           connection: "Postgres",
           placeholder: "Enter password",
-          advanced: true
+          advanced: true,
         },
         {
           type: "radio",
@@ -78,24 +78,23 @@ export class PostgresOutput extends BaseCoreComponent {
           options: [
             { value: "fail", label: "Fail" },
             { value: "replace", label: "Replace" },
-            { value: "append", label: "Append" }
+            { value: "append", label: "Append" },
           ],
-          advanced: true
+          advanced: true,
         },
         {
           type: "radio",
           label: "Mode",
           id: "mode",
-          options: [
-            { value: "insert", label: "INSERT" }
-          ],
-          advanced: true
+          options: [{ value: "insert", label: "INSERT" }],
+          advanced: true,
         },
         {
           type: "dataMapping",
           label: "Mapping",
           id: "mapping",
-          tooltip: "By default the mapping is inferred from the input data. By specifying a schema you override the incoming schema.",
+          tooltip:
+            "By default the mapping is inferred from the input data. By specifying a schema you override the incoming schema.",
           outputType: "relationalDatabase",
           imports: ["psycopg2-binary"],
           drivers: "postgresql",
@@ -146,20 +145,31 @@ WHERE
             { value: "MACADDR", label: "MACADDR" },
             { value: "BIT", label: "BIT" },
             { value: "TSVECTOR", label: "TSVECTOR" },
-            { value: "TSQUERY", label: "TSQUERY" }
+            { value: "TSQUERY", label: "TSQUERY" },
           ],
-          advanced: true
-        }
+          advanced: true,
+        },
       ],
     };
-    const description = "Use Postgres Output to insert data into a Postgres table by specifying a data mapping between the incoming data and the existing table schema."
+    const description =
+      "Use Postgres Output to insert data into a Postgres table by specifying a data mapping between the incoming data and the existing table schema.";
 
-    super("Postgres Output", "postgresOutput", description, "pandas_df_output", [], "outputs.Databases", postgresIcon, defaultConfig, form);
+    super(
+      "Postgres Output",
+      "postgresOutput",
+      description,
+      "pandas_df_output",
+      [],
+      "outputs.Databases",
+      postgresIcon,
+      defaultConfig,
+      form,
+    );
   }
 
   public provideDependencies({ config }): string[] {
     let deps: string[] = [];
-    deps.push('psycopg2-binary');
+    deps.push("psycopg2-binary");
     return deps;
   }
 
@@ -183,8 +193,12 @@ ${connectionName} = sqlalchemy.create_engine(
 
     if (config.mapping && config.mapping.length > 0) {
       const renameMap = config.mapping
-        .filter(map => map.input && (map.input.value || typeof map.input.value === 'number'))
-        .map(map => {
+        .filter(
+          (map) =>
+            map.input &&
+            (map.input.value || typeof map.input.value === "number"),
+        )
+        .map((map) => {
           if (map.input.value != map.value) {
             if (map.input.named) {
               return `"${map.input.value}": "${map.value}"`; // Handles named columns
@@ -194,7 +208,7 @@ ${connectionName} = sqlalchemy.create_engine(
           }
           return undefined; // Explicitly return undefined for clarity
         })
-        .filter(value => value !== undefined);
+        .filter((value) => value !== undefined);
 
       if (renameMap.length > 0) {
         mappingsCode = `
@@ -204,9 +218,9 @@ ${inputName} = ${inputName}.rename(columns={${renameMap.join(", ")}})
       }
 
       const selectedColumns = config.mapping
-        .filter(map => map.value !== null && map.value !== undefined)
-        .map(map => `"${map.value}"`)
-        .join(', ');
+        .filter((map) => map.value !== null && map.value !== undefined)
+        .map((map) => `"${map.value}"`)
+        .join(", ");
 
       if (selectedColumns) {
         columnsCode = `
@@ -218,12 +232,16 @@ ${inputName} = ${inputName}[[${selectedColumns}]]
 
     const ifExistsAction = config.ifTableExists;
 
-    const schemaParam = (config.schema && config.schema.toLowerCase() !== 'public')
-      ? `,
+    const schemaParam =
+      config.schema && config.schema.toLowerCase() !== "public"
+        ? `,
   schema="${config.schema}"`
-      : '';
+        : "";
 
-    const connectionCode = this.generateDatabaseConnectionCode({ config, connectionName: uniqueEngineName });
+    const connectionCode = this.generateDatabaseConnectionCode({
+      config,
+      connectionName: uniqueEngineName,
+    });
 
     return `
 ${connectionCode}

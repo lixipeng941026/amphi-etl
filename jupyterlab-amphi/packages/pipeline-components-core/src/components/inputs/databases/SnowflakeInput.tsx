@@ -1,10 +1,13 @@
-
-import { snowflakeIcon } from '../../../icons';
-import { BaseCoreComponent } from '../../BaseCoreComponent';// Adjust the import path
+import { snowflakeIcon } from "../../../icons";
+import { BaseCoreComponent } from "../../BaseCoreComponent"; // Adjust the import path
 
 export class SnowflakeInput extends BaseCoreComponent {
   constructor() {
-    const defaultConfig = { schema: "PUBLIC", tableName: "", queryMethod: "table" };
+    const defaultConfig = {
+      schema: "PUBLIC",
+      tableName: "",
+      queryMethod: "table",
+    };
     const form = {
       fields: [
         {
@@ -13,7 +16,7 @@ export class SnowflakeInput extends BaseCoreComponent {
           id: "account",
           placeholder: "Enter Account",
           connection: "Snowflake",
-          advanced: true
+          advanced: true,
         },
         {
           type: "input",
@@ -21,7 +24,7 @@ export class SnowflakeInput extends BaseCoreComponent {
           id: "database",
           connection: "Snowflake",
           placeholder: "Enter database name",
-          advanced: true
+          advanced: true,
         },
         {
           type: "input",
@@ -29,7 +32,7 @@ export class SnowflakeInput extends BaseCoreComponent {
           id: "username",
           placeholder: "Enter username",
           connection: "Snowflake",
-          advanced: true
+          advanced: true,
         },
         {
           type: "input",
@@ -38,7 +41,7 @@ export class SnowflakeInput extends BaseCoreComponent {
           placeholder: "Enter password",
           connection: "Snowflake",
           inputType: "password",
-          advanced: true
+          advanced: true,
         },
         {
           type: "input",
@@ -46,7 +49,7 @@ export class SnowflakeInput extends BaseCoreComponent {
           id: "warehouse",
           placeholder: "Enter warehouse name",
           connection: "Snowflake",
-          advanced: true
+          advanced: true,
         },
         {
           type: "input",
@@ -54,60 +57,78 @@ export class SnowflakeInput extends BaseCoreComponent {
           id: "schema",
           connection: "Snowflake",
           placeholder: "Enter schema name",
-          advanced: true
+          advanced: true,
         },
         {
           type: "radio",
           label: "Query Method",
           id: "queryMethod",
-          tooltip: "Select whether you want to specify the table name to retrieve data or use a custom SQL query for greater flexibility.",
+          tooltip:
+            "Select whether you want to specify the table name to retrieve data or use a custom SQL query for greater flexibility.",
           options: [
-            { value: "table", label: "Table Name" },
-            { value: "query", label: "SQL Query" }
+            { value: "table", label: "表名" },
+            { value: "query", label: "SQL Query" },
           ],
-          advanced: true
+          advanced: true,
         },
         {
           type: "table",
-          label: "Table Name",
+          label: "表名",
           query: `SELECT table_name FROM information_schema.tables WHERE table_schema = '{{schema}}'`,
           id: "tableName",
-          placeholder: "Enter table name",
-          condition: { queryMethod: "table" }
+          placeholder: "输入表名",
+          condition: { queryMethod: "table" },
         },
         {
           type: "codeTextarea",
           label: "SQL Query",
-          height: '50px',
+          height: "50px",
           mode: "sql",
-          placeholder: 'SELECT * FROM table_name',
+          placeholder: "SELECT * FROM table_name",
           id: "sqlQuery",
-          tooltip: 'Optional. By default the SQL query is: SELECT * FROM table_name_provided. If specified, the SQL Query is used.',
+          tooltip:
+            "Optional. By default the SQL query is: SELECT * FROM table_name_provided. If specified, the SQL Query is used.",
           condition: { queryMethod: "query" },
-          advanced: true
+          advanced: true,
         },
         {
           type: "input",
           label: "Role (Optional)",
           id: "role",
           placeholder: "Role name",
-          advanced: true
-        }
+          advanced: true,
+        },
       ],
     };
-    const description = "Use Snowflake Input to retrieve data from Snowflake by specifying either a table name or a custom SQL query."
+    const description =
+      "Use Snowflake Input to retrieve data from Snowflake by specifying either a table name or a custom SQL query.";
 
-    super("Snowflake Input", "snowflakeInput", description, "pandas_df_input", [], "inputs.Databases", snowflakeIcon, defaultConfig, form);
+    super(
+      "Snowflake Input",
+      "snowflakeInput",
+      description,
+      "pandas_df_input",
+      [],
+      "inputs.Databases",
+      snowflakeIcon,
+      defaultConfig,
+      form,
+    );
   }
 
   public provideDependencies({ config }): string[] {
     let deps: string[] = [];
-    deps.push('snowflake-sqlalchemy');
+    deps.push("snowflake-sqlalchemy");
     return deps;
   }
 
   public provideImports({ config }): string[] {
-    return ["import pandas as pd", "import sqlalchemy", "import urllib.parse", "from snowflake.sqlalchemy import URL"];
+    return [
+      "import pandas as pd",
+      "import sqlalchemy",
+      "import urllib.parse",
+      "from snowflake.sqlalchemy import URL",
+    ];
   }
 
   public generateDatabaseConnectionCode({ config, connectionName }): string {
@@ -130,14 +151,14 @@ ${connectionName} = sqlalchemy.create_engine(URL(
 
     // Build table reference with optional schema
     const tableReference = config.tableName?.value
-      ? (config.schema && config.schema.toLowerCase() !== 'public')
+      ? config.schema && config.schema.toLowerCase() !== "public"
         ? `"${config.schema}"."${config.tableName.value}"`
         : `"${config.tableName.value}"`
       : null;
 
     let sqlQuery: string;
 
-    if (config.queryMethod === 'query' && config.sqlQuery) {
+    if (config.queryMethod === "query" && config.sqlQuery) {
       try {
         const parsedQuery = JSON.parse(config.sqlQuery);
         sqlQuery = parsedQuery.code?.trim();
@@ -147,7 +168,7 @@ ${connectionName} = sqlalchemy.create_engine(URL(
           if (tableReference) {
             sqlQuery = `SELECT * FROM ${tableReference}`;
           } else {
-            throw new Error('No SQL query provided and table name is missing');
+            throw new Error("No SQL query provided and table name is missing");
           }
         }
       } catch (e) {
@@ -156,20 +177,22 @@ ${connectionName} = sqlalchemy.create_engine(URL(
         if (tableReference) {
           sqlQuery = `SELECT * FROM ${tableReference}`;
         } else {
-          throw new Error('Invalid SQL query and no valid table name available');
+          throw new Error(
+            "Invalid SQL query and no valid table name available",
+          );
         }
       }
     } else {
       // Default to table query
       if (!tableReference) {
-        throw new Error('Table name is missing');
+        throw new Error("Table name is missing");
       }
       sqlQuery = `SELECT * FROM ${tableReference}`;
     }
 
     const connectionCode = this.generateDatabaseConnectionCode({
       config,
-      connectionName: uniqueEngineName
+      connectionName: uniqueEngineName,
     });
 
     const code = `
@@ -190,5 +213,4 @@ finally:
 
     return code;
   }
-
 }

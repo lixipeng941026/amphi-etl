@@ -33,7 +33,7 @@ export class DatabaseInput extends BaseCoreComponent {
       fields: [
         {
           type: "select",
-          label: "Database Type",
+          label: "数据库类型",
           id: "provider",
           options: [
             { value: "postgres", label: "PostgreSQL" },

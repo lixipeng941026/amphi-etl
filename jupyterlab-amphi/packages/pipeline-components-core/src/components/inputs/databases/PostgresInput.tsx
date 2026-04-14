@@ -1,10 +1,18 @@
-
-import { postgresIcon } from '../../../icons';
-import { BaseCoreComponent } from '../../BaseCoreComponent';// Adjust the import path
+import { postgresIcon } from "../../../icons";
+import { BaseCoreComponent } from "../../BaseCoreComponent"; // Adjust the import path
 
 export class PostgresInput extends BaseCoreComponent {
   constructor() {
-    const defaultConfig = { host: "localhost", port: "5432", databaseName: "", username: "", password: "", schema: "public", tableName: "", queryMethod: "table" };
+    const defaultConfig = {
+      host: "localhost",
+      port: "5432",
+      databaseName: "",
+      username: "",
+      password: "",
+      schema: "public",
+      tableName: "",
+      queryMethod: "table",
+    };
     const form = {
       fields: [
         {
@@ -13,7 +21,7 @@ export class PostgresInput extends BaseCoreComponent {
           id: "host",
           placeholder: "Enter database host",
           connection: "Postgres",
-          advanced: true
+          advanced: true,
         },
         {
           type: "input",
@@ -21,7 +29,7 @@ export class PostgresInput extends BaseCoreComponent {
           id: "port",
           placeholder: "Enter database port",
           connection: "Postgres",
-          advanced: true
+          advanced: true,
         },
         {
           type: "input",
@@ -29,7 +37,7 @@ export class PostgresInput extends BaseCoreComponent {
           id: "databaseName",
           placeholder: "Enter database name",
           connection: "Postgres",
-          advanced: true
+          advanced: true,
         },
         {
           type: "input",
@@ -37,7 +45,7 @@ export class PostgresInput extends BaseCoreComponent {
           id: "username",
           placeholder: "Enter username",
           connection: "Postgres",
-          advanced: true
+          advanced: true,
         },
         {
           type: "input",
@@ -46,7 +54,7 @@ export class PostgresInput extends BaseCoreComponent {
           placeholder: "Enter password",
           connection: "Postgres",
           inputType: "password",
-          advanced: true
+          advanced: true,
         },
         {
           type: "input",
@@ -58,42 +66,57 @@ export class PostgresInput extends BaseCoreComponent {
           type: "radio",
           label: "Query Method",
           id: "queryMethod",
-          tooltip: "Select whether you want to specify the table name to retrieve data or use a custom SQL query for greater flexibility.",
+          tooltip:
+            "Select whether you want to specify the table name to retrieve data or use a custom SQL query for greater flexibility.",
           options: [
-            { value: "table", label: "Table Name" },
-            { value: "query", label: "SQL Query" }
+            { value: "table", label: "表名" },
+            // { value: "table", label: "Table Name" },
+            { value: "query", label: "SQL Query" },
           ],
-          advanced: true
+          advanced: true,
         },
         {
           type: "table",
-          label: "Table Name",
+          label: "表名",
+          // label: "Table Name",
           query: `SELECT table_name FROM information_schema.tables WHERE table_schema = '{{schema}}';`,
           id: "tableName",
-          placeholder: "Enter table name",
-          condition: { queryMethod: "table" }
+          placeholder: "输入表名",
+          condition: { queryMethod: "table" },
         },
         {
           type: "codeTextarea",
           label: "SQL Query",
-          height: '150px',
+          height: "150px",
           mode: "sql",
-          placeholder: 'SELECT * FROM table_name',
+          placeholder: "SELECT * FROM table_name",
           id: "sqlQuery",
-          tooltip: 'Optional. By default the SQL query is: SELECT * FROM table_name_provided. If specified, the SQL Query is used.',
+          tooltip:
+            "Optional. By default the SQL query is: SELECT * FROM table_name_provided. If specified, the SQL Query is used.",
           condition: { queryMethod: "query" },
-          advanced: true
-        }
+          advanced: true,
+        },
       ],
     };
-    const description = "Use Postgres Input to retrieve data from Postgres by specifying either a table name or a custom SQL query."
+    const description =
+      "Use Postgres Input to retrieve data from Postgres by specifying either a table name or a custom SQL query.";
 
-    super("Postgres Input", "postgresInput", description, "pandas_df_input", [], "inputs.Databases", postgresIcon, defaultConfig, form);
+    super(
+      "Postgres Input",
+      "postgresInput",
+      description,
+      "pandas_df_input",
+      [],
+      "inputs.Databases",
+      postgresIcon,
+      defaultConfig,
+      form,
+    );
   }
 
   public provideDependencies({ config }): string[] {
     let deps: string[] = [];
-    deps.push('psycopg2-binary');
+    deps.push("psycopg2-binary");
     return deps;
   }
 
@@ -114,13 +137,14 @@ ${connectionName} = sqlalchemy.create_engine("${connectionString}")
     const uniqueEngineName = `${outputName}_Engine`;
 
     // Build table reference only if both schema and tableName exist
-    const tableReference = config.schema && config.tableName?.value
-      ? `"${config.schema}"."${config.tableName.value}"`
-      : null;
+    const tableReference =
+      config.schema && config.tableName?.value
+        ? `"${config.schema}"."${config.tableName.value}"`
+        : null;
 
     let sqlQuery: string;
 
-    if (config.queryMethod === 'query' && config.sqlQuery) {
+    if (config.queryMethod === "query" && config.sqlQuery) {
       try {
         const parsedQuery = JSON.parse(config.sqlQuery);
         sqlQuery = parsedQuery.code?.trim();
@@ -130,7 +154,9 @@ ${connectionName} = sqlalchemy.create_engine("${connectionString}")
           if (tableReference) {
             sqlQuery = `SELECT * FROM ${tableReference}`;
           } else {
-            throw new Error('No SQL query provided and table reference is incomplete');
+            throw new Error(
+              "No SQL query provided and table reference is incomplete",
+            );
           }
         }
       } catch (e) {
@@ -139,20 +165,24 @@ ${connectionName} = sqlalchemy.create_engine("${connectionString}")
         if (tableReference) {
           sqlQuery = `SELECT * FROM ${tableReference}`;
         } else {
-          throw new Error('Invalid SQL query and no valid table reference available');
+          throw new Error(
+            "Invalid SQL query and no valid table reference available",
+          );
         }
       }
     } else {
       // Default to table query
       if (!tableReference) {
-        throw new Error('Table reference is incomplete (missing schema or tableName)');
+        throw new Error(
+          "Table reference is incomplete (missing schema or tableName)",
+        );
       }
       sqlQuery = `SELECT * FROM ${tableReference}`;
     }
 
     const connectionCode = this.generateDatabaseConnectionCode({
       config,
-      connectionName: uniqueEngineName
+      connectionName: uniqueEngineName,
     });
 
     const code = `
@@ -173,5 +203,4 @@ finally:
 
     return code;
   }
-
 }

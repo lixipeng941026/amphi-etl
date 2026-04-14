@@ -351,26 +351,24 @@ const JobForm: React.FC<{
         <Form.Item
           style={{ marginBottom: 16 }}
           name="name"
-          label="Task Name"
-          rules={[{ required: true, message: "Please input a task name" }]}
+          label="任务名称"
+          rules={[{ required: true, message: "请输入一个任务名称" }]}
         >
-          <Input placeholder="My Task Name" />
+          <Input placeholder="我的任务名称" />
         </Form.Item>
 
         <Form.Item
           style={{ marginBottom: 16 }} /* spacing */
-          label="Pipeline Path"
+          label="管道路径"
           required
         >
           <Space.Compact style={{ width: "100%" }}>
             <Form.Item
               name="pipeline_path"
               noStyle
-              rules={[
-                { required: true, message: "Please select a pipeline file" },
-              ]}
+              rules={[{ required: true, message: "请选择一个管道文件" }]}
             >
-              <Input readOnly placeholder="Select a .ampln or .py file" />
+              <Input readOnly placeholder="选择一个 .ampln 或 .py 文件" />
             </Form.Item>
             <Button icon={<FolderOpenOutlined />} onClick={pickPipelinePath} />
           </Space.Compact>
@@ -379,7 +377,7 @@ const JobForm: React.FC<{
         <Form.Item
           style={{ marginBottom: 16 }}
           name="schedule_type"
-          label="Schedule Type"
+          label="计划类型"
         >
           <Radio.Group onChange={(e) => setScheduleType(e.target.value)}>
             <Radio value="date">Date</Radio>
@@ -394,17 +392,17 @@ const JobForm: React.FC<{
             <Form.Item
               style={{ marginBottom: 16 }}
               name="date_type"
-              label="Date Type"
+              label="日期类型"
             >
               <Select
                 onChange={(value) => setDateType(value)}
                 style={{ width: "100%" }}
               >
-                <Select.Option value="once">One-time</Select.Option>
-                <Select.Option value="daily">Daily</Select.Option>
-                <Select.Option value="weekly">Weekly</Select.Option>
-                <Select.Option value="monthly">Monthly</Select.Option>
-                <Select.Option value="every_x_days">Every X Days</Select.Option>
+                <Select.Option value="once">一次</Select.Option>
+                <Select.Option value="daily">每天</Select.Option>
+                <Select.Option value="weekly">每周</Select.Option>
+                <Select.Option value="monthly">每月</Select.Option>
+                <Select.Option value="every_x_days">每隔 X 天</Select.Option>
               </Select>
             </Form.Item>
 
@@ -413,11 +411,9 @@ const JobForm: React.FC<{
                 style={{ marginBottom: 16 }}
                 name="run_date"
                 label={
-                  dateType === "once" ? "Run Date & Time" : "Start Date & Time"
+                  dateType === "once" ? "运行日期与时间" : "开始日期和时间"
                 }
-                rules={[
-                  { required: true, message: "Please select a date and time" },
-                ]}
+                rules={[{ required: true, message: "请选择日期和时间" }]}
               >
                 <DatePicker showTime style={{ width: "100%" }} />
               </Form.Item>
@@ -545,7 +541,7 @@ const JobForm: React.FC<{
                     icon={<PlusOutlined />}
                     style={{ width: "100%", marginBottom: 16 }}
                   >
-                    Add Condition
+                    新增条件
                   </Button>
                 </>
               )}
@@ -561,9 +557,9 @@ const JobForm: React.FC<{
               justifyContent: "flex-end",
             }}
           >
-            <Button onClick={onCancel}>Cancel</Button>
+            <Button onClick={onCancel}>取消</Button>
             <Button type="primary" htmlType="submit">
-              Submit
+              确定
             </Button>
           </Space>
         </Form.Item>
@@ -1147,7 +1143,7 @@ const SchedulerPanel: React.FC<SchedulerPanelProps> = ({
         </div>
 
         <Modal
-          title={currentJob ? "Edit Task" : "New Task"}
+          title={currentJob ? "Edit Task" : "新建任务"}
           open={jobModalVisible}
           onCancel={() => setJobModalVisible(false)}
           footer={null}

@@ -1,5 +1,5 @@
-import { snowflakeIcon } from '../../../icons';
-import { BaseCoreComponent } from '../../BaseCoreComponent'; // Adjust the import path
+import { snowflakeIcon } from "../../../icons";
+import { BaseCoreComponent } from "../../BaseCoreComponent"; // Adjust the import path
 
 export class SnowflakeOutput extends BaseCoreComponent {
   constructor() {
@@ -13,7 +13,7 @@ export class SnowflakeOutput extends BaseCoreComponent {
       warehouse: "",
       role: "",
       ifTableExists: "fail",
-      mode: "insert"
+      mode: "insert",
     };
     const form = {
       idPrefix: "component__form",
@@ -24,7 +24,7 @@ export class SnowflakeOutput extends BaseCoreComponent {
           id: "account",
           placeholder: "Enter Account",
           connection: "Snowflake",
-          advanced: true
+          advanced: true,
         },
         {
           type: "input",
@@ -32,7 +32,7 @@ export class SnowflakeOutput extends BaseCoreComponent {
           id: "database",
           connection: "Snowflake",
           placeholder: "Enter database name",
-          advanced: true
+          advanced: true,
         },
         {
           type: "input",
@@ -40,7 +40,7 @@ export class SnowflakeOutput extends BaseCoreComponent {
           id: "username",
           placeholder: "Enter username",
           connection: "Snowflake",
-          advanced: true
+          advanced: true,
         },
         {
           type: "input",
@@ -49,35 +49,36 @@ export class SnowflakeOutput extends BaseCoreComponent {
           placeholder: "Enter password",
           connection: "Snowflake",
           inputType: "password",
-          advanced: true
+          advanced: true,
         },
         {
           type: "input",
           label: "Warehouse",
           id: "warehouse",
           placeholder: "Enter warehouse name",
-          advanced: true
+          advanced: true,
         },
         {
           type: "input",
           label: "Schema",
           id: "schema",
           placeholder: "Enter schema name",
-          advanced: true
+          advanced: true,
         },
         {
           type: "input",
           label: "Role (Optional)",
           id: "role",
           placeholder: "Role name",
-          advanced: true
+          advanced: true,
         },
         {
           type: "table",
-          label: "Table Name",
+          label: "表名",
+          // label: "Table Name",
           query: `SELECT table_name FROM information_schema.tables WHERE table_schema = '{{schema}}'`,
           id: "tableName",
-          placeholder: "Enter table name"
+          placeholder: "输入表名",
         },
         {
           type: "radio",
@@ -86,24 +87,23 @@ export class SnowflakeOutput extends BaseCoreComponent {
           options: [
             { value: "fail", label: "Fail" },
             { value: "replace", label: "Replace" },
-            { value: "append", label: "Append" }
+            { value: "append", label: "Append" },
           ],
-          advanced: true
+          advanced: true,
         },
         {
           type: "radio",
           label: "Mode",
           id: "mode",
-          options: [
-            { value: "insert", label: "INSERT" }
-          ],
-          advanced: true
+          options: [{ value: "insert", label: "INSERT" }],
+          advanced: true,
         },
         {
           type: "dataMapping",
           label: "Mapping",
           id: "mapping",
-          tooltip: "By default, the mapping is inferred from the input data. By specifying a schema, you override the incoming schema.",
+          tooltip:
+            "By default, the mapping is inferred from the input data. By specifying a schema, you override the incoming schema.",
           outputType: "relationalDatabase",
           imports: ["snowflake-sqlalchemy"],
           drivers: "snowflake",
@@ -119,19 +119,30 @@ export class SnowflakeOutput extends BaseCoreComponent {
             { value: "TIMESTAMP", label: "TIMESTAMP" },
             { value: "VARIANT", label: "VARIANT" },
             { value: "OBJECT", label: "OBJECT" },
-            { value: "ARRAY", label: "ARRAY" }
+            { value: "ARRAY", label: "ARRAY" },
           ],
-          advanced: true
-        }
-      ]
+          advanced: true,
+        },
+      ],
     };
-    const description = "Use Snowflake Output to insert data into a Snowflake table by specifying a data mapping between the incoming data and the existing table schema.";
+    const description =
+      "Use Snowflake Output to insert data into a Snowflake table by specifying a data mapping between the incoming data and the existing table schema.";
 
-    super("Snowflake Output", "snowflakeOutput", description, "pandas_df_output", [], "outputs.Databases", snowflakeIcon, defaultConfig, form);
+    super(
+      "Snowflake Output",
+      "snowflakeOutput",
+      description,
+      "pandas_df_output",
+      [],
+      "outputs.Databases",
+      snowflakeIcon,
+      defaultConfig,
+      form,
+    );
   }
 
   public provideDependencies({ config }): string[] {
-    return ['snowflake-sqlalchemy'];
+    return ["snowflake-sqlalchemy"];
   }
 
   public provideImports({ config }): string[] {
@@ -139,12 +150,12 @@ export class SnowflakeOutput extends BaseCoreComponent {
       "import pandas as pd",
       "import sqlalchemy",
       "import urllib.parse",
-      "from snowflake.sqlalchemy import URL"
+      "from snowflake.sqlalchemy import URL",
     ];
   }
 
   public generateDatabaseConnectionCode({ config, connectionName }): string {
-    const rolePart = config.role ? `, role='${config.role}'` : '';
+    const rolePart = config.role ? `, role='${config.role}'` : "";
     return `
 # Connect to the Snowflake database
 ${connectionName} = sqlalchemy.create_engine(URL(
@@ -165,14 +176,19 @@ ${connectionName} = sqlalchemy.create_engine(URL(
 
     if (config.mapping && config.mapping.length > 0) {
       const renameMap = config.mapping
-        .filter(map => map.input && map.input.value !== undefined && map.input.value !== null)
-        .map(map => {
+        .filter(
+          (map) =>
+            map.input &&
+            map.input.value !== undefined &&
+            map.input.value !== null,
+        )
+        .map((map) => {
           if (map.input.value != map.value) {
             return `"${map.input.value}": "${map.value}"`;
           }
           return undefined;
         })
-        .filter(value => value !== undefined);
+        .filter((value) => value !== undefined);
 
       if (renameMap.length > 0) {
         mappingsCode = `
@@ -182,9 +198,9 @@ ${inputName} = ${inputName}.rename(columns={${renameMap.join(", ")}})
       }
 
       const selectedColumns = config.mapping
-        .filter(map => map.value !== null && map.value !== undefined)
-        .map(map => `"${map.value}"`)
-        .join(', ');
+        .filter((map) => map.value !== null && map.value !== undefined)
+        .map((map) => `"${map.value}"`)
+        .join(", ");
 
       if (selectedColumns) {
         columnsCode = `
@@ -196,12 +212,16 @@ ${inputName} = ${inputName}[[${selectedColumns}]]
 
     const ifExistsAction = config.ifTableExists;
 
-    const schemaParam = (config.schema && config.schema.toUpperCase() !== 'PUBLIC')
-      ? `,
+    const schemaParam =
+      config.schema && config.schema.toUpperCase() !== "PUBLIC"
+        ? `,
     schema="${config.schema}"`
-      : '';
+        : "";
 
-    const connectionCode = this.generateDatabaseConnectionCode({ config, connectionName: uniqueEngineName });
+    const connectionCode = this.generateDatabaseConnectionCode({
+      config,
+      connectionName: uniqueEngineName,
+    });
 
     return `
 ${connectionCode}

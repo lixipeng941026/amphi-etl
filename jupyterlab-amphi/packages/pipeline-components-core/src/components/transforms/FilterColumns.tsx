@@ -12,7 +12,7 @@ export class FilterColumns extends BaseCoreComponent {
           type: "info",
           label: "Instructions",
           id: "instructions",
-          text: "Select the columns you want to keep, and drag and drop them to reorder.",
+          text: "选择您想要保留的列，然后通过拖拽操作将它们重新排列顺序。",
         },
         {
           type: "transferData",

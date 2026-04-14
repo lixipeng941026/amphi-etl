@@ -1,129 +1,225 @@
-import { joinIcon } from '../../../icons';
-import { BaseCoreComponent } from '../../BaseCoreComponent';
+import { joinIcon } from "../../../icons";
+import { BaseCoreComponent } from "../../BaseCoreComponent";
 
 export class AdvancedJoin extends BaseCoreComponent {
-    constructor() {
-        const defaultConfig = {
-            selectExecutionEngine: "pandas",
-            selectJoinType: "left",
-            selectActionIfCartesianProduct: "0",
-            selectSameNameStrategy: "suffix_right"
-        };
-        const form = {
-            idPrefix: "component__form",
-            fields: [
-                {
-                    type: "select",
-                    label: "Join type",
-                    id: "selectJoinType",
-                    //placeholder: "Default: left", (no placeholder because defined in defaultConfig)
-                    options: [
-                        { value: "inner", label: "Inner", tooltip: "Return only the rows with matching keys in both datasets (intersection)." },
-                        { value: "left", label: "Left", tooltip: "Return all rows from the left dataset and matched rows from the right dataset (including NaN for no match)." },
-                        { value: "right", label: "Right", tooltip: "Return all rows from the right dataset and matched rows from the left dataset (including NaN for no match)." },
-                        { value: "outer", label: "Outer", tooltip: "Return all rows from both datasets, with matches where available and NaN for no match (union)." },
-                        { value: "cross", label: "Cross", tooltip: "Creates the cartesian product from both datasets, preserves the order of the left keys." },
-                        { value: "anti-left", label: "Anti Left", tooltip: "Return rows from the left dataset that do not have matching rows in the right dataset." },
-                        { value: "anti-right", label: "Anti Right", tooltip: "Return rows from the right dataset that do not have matching rows in the left dataset." }
-                    ],
-                    advanced: true
-                }
-                ,
-                {
-                    type: "columnOperationColumn",
-                    label: "Join Conditions",
-                    id: "joinConditions",
-                    tooltip: "Define one or more join conditions with left column, operator, and right column.",
-                    options: [
-                        { value: "=", label: "=" },
-                        { value: ">", label: ">" },
-                        { value: "<", label: "<" },
-                        { value: ">=", label: ">=" },
-                        { value: "<=", label: "<=" }
-                    ],
-                    operatorControlFieldId: "selectExecutionEngine",
-                    operatorLockedValues: ["pandas"],
-                    operatorLockedWhenMissing: true
-                },
-                {
-                    type: "select",
-                    label: "Cartesian Product",
-                    tooltip: "If the join keys contain duplicates, the result may multiply rows (Cartesian product). Choose how to handle this situation: continue, raise an error, or raise a warning.",
-                    id: "selectActionIfCartesianProduct",
-                    columnId: 1,
-                    options: [
-                        { value: "0", label: "Default", tooltip: "No action, execution of the join will continue." },
-                        { value: "2", label: "Raise error if Cartesian product is detected", tooltip: "Execution will be stopped." },
-                        { value: "3", label: "Raise warning if Cartesian product is detected", tooltip: "Execution will continue." }
-                    ],
-                    condition: { selectJoinType: ["inner", "left", "right", "outer", "anti-right", "anti-left"] },
-                    advanced: true
-                }
-                ,
-                {
-                    type: "select",
-                    label: "Strategy for same names",
-                    id: "selectSameNameStrategy",
-                    columnId: 1,
-                    options: [
-                        { value: "suffix_right", label: "Add _right suffix", tooltip: "If both datasets have columns with the same name, add '_right' to the columns from the right dataset." },
-                        { value: "suffix_both", label: "Add _left and _right suffixes", tooltip: "If both datasets have columns with the same name, add '_left' to the columns from the left dataset and '_right' to the columns from the right dataset." },
-                        { value: "coalesce", label: "Coalesce", tooltip: "If both datasets have columns with the same name, keep only one column. Fill missing values with data from the right dataset when the left one is empty." }
-                    ],
-                    condition: { selectJoinType: ["inner", "left", "right", "outer", "cross"] },
-                    advanced: true
-                }
-                ,
-                {
-                    type: "select",
-                    label: "Execution Engine",
-                    id: "selectExecutionEngine",
-                    placeholder: "Default: Pandas",
-                    options: [
-                        { value: "pandas", label: "Pandas", tooltip: "Mature, easy-to-use, great for small-to-medium datasets." },
-                        { value: "polars", label: "Polars", tooltip: "Fast, memory-efficient, great for large-scale in-memory analytics." },
-                        { value: "duckdb", label: "DuckDB", tooltip: "SQL-based, excellent for large datasets" }
-                    ],
-                    advanced: true
-                }
+  constructor() {
+    const defaultConfig = {
+      selectExecutionEngine: "pandas",
+      selectJoinType: "left",
+      selectActionIfCartesianProduct: "0",
+      selectSameNameStrategy: "suffix_right",
+    };
+    const form = {
+      idPrefix: "component__form",
+      fields: [
+        {
+          type: "select",
+          label: "连接类型",
+          id: "selectJoinType",
+          //placeholder: "Default: left", (no placeholder because defined in defaultConfig)
+          options: [
+            {
+              value: "inner",
+              label: "Inner",
+              tooltip:
+                "Return only the rows with matching keys in both datasets (intersection).",
+            },
+            {
+              value: "left",
+              label: "Left",
+              tooltip:
+                "Return all rows from the left dataset and matched rows from the right dataset (including NaN for no match).",
+            },
+            {
+              value: "right",
+              label: "Right",
+              tooltip:
+                "Return all rows from the right dataset and matched rows from the left dataset (including NaN for no match).",
+            },
+            {
+              value: "outer",
+              label: "Outer",
+              tooltip:
+                "Return all rows from both datasets, with matches where available and NaN for no match (union).",
+            },
+            {
+              value: "cross",
+              label: "Cross",
+              tooltip:
+                "Creates the cartesian product from both datasets, preserves the order of the left keys.",
+            },
+            {
+              value: "anti-left",
+              label: "Anti Left",
+              tooltip:
+                "Return rows from the left dataset that do not have matching rows in the right dataset.",
+            },
+            {
+              value: "anti-right",
+              label: "Anti Right",
+              tooltip:
+                "Return rows from the right dataset that do not have matching rows in the left dataset.",
+            },
+          ],
+          advanced: true,
+        },
+        {
+          type: "columnOperationColumn",
+          label: "连接条件",
+          id: "joinConditions",
+          tooltip: "定义一个或多个左列、操作符和右列的连接条件。",
+          options: [
+            { value: "=", label: "=" },
+            { value: ">", label: ">" },
+            { value: "<", label: "<" },
+            { value: ">=", label: ">=" },
+            { value: "<=", label: "<=" },
+          ],
+          operatorControlFieldId: "selectExecutionEngine",
+          operatorLockedValues: ["pandas"],
+          operatorLockedWhenMissing: true,
+        },
+        {
+          type: "select",
+          label: "Cartesian Product",
+          tooltip:
+            "If the join keys contain duplicates, the result may multiply rows (Cartesian product). Choose how to handle this situation: continue, raise an error, or raise a warning.",
+          id: "selectActionIfCartesianProduct",
+          columnId: 1,
+          options: [
+            {
+              value: "0",
+              label: "Default",
+              tooltip: "No action, execution of the join will continue.",
+            },
+            {
+              value: "2",
+              label: "Raise error if Cartesian product is detected",
+              tooltip: "Execution will be stopped.",
+            },
+            {
+              value: "3",
+              label: "Raise warning if Cartesian product is detected",
+              tooltip: "Execution will continue.",
+            },
+          ],
+          condition: {
+            selectJoinType: [
+              "inner",
+              "left",
+              "right",
+              "outer",
+              "anti-right",
+              "anti-left",
             ],
-        };
-        const description = "Use Join Datasets to combine two datasets by one or more columns."
+          },
+          advanced: true,
+        },
+        {
+          type: "select",
+          label: "Strategy for same names",
+          id: "selectSameNameStrategy",
+          columnId: 1,
+          options: [
+            {
+              value: "suffix_right",
+              label: "Add _right suffix",
+              tooltip:
+                "If both datasets have columns with the same name, add '_right' to the columns from the right dataset.",
+            },
+            {
+              value: "suffix_both",
+              label: "Add _left and _right suffixes",
+              tooltip:
+                "If both datasets have columns with the same name, add '_left' to the columns from the left dataset and '_right' to the columns from the right dataset.",
+            },
+            {
+              value: "coalesce",
+              label: "Coalesce",
+              tooltip:
+                "If both datasets have columns with the same name, keep only one column. Fill missing values with data from the right dataset when the left one is empty.",
+            },
+          ],
+          condition: {
+            selectJoinType: ["inner", "left", "right", "outer", "cross"],
+          },
+          advanced: true,
+        },
+        {
+          type: "select",
+          label: "Execution Engine",
+          id: "selectExecutionEngine",
+          placeholder: "Default: Pandas",
+          options: [
+            {
+              value: "pandas",
+              label: "Pandas",
+              tooltip:
+                "Mature, easy-to-use, great for small-to-medium datasets.",
+            },
+            {
+              value: "polars",
+              label: "Polars",
+              tooltip:
+                "Fast, memory-efficient, great for large-scale in-memory analytics.",
+            },
+            {
+              value: "duckdb",
+              label: "DuckDB",
+              tooltip: "SQL-based, excellent for large datasets",
+            },
+          ],
+          advanced: true,
+        },
+      ],
+    };
+    const description =
+      "Use Join Datasets to combine two datasets by one or more columns.";
 
-        super("Join Datasets", "join", description, "pandas_df_double_processor", [], "transforms", joinIcon, defaultConfig, form);
+    super(
+      "Join Datasets",
+      "join",
+      description,
+      "pandas_df_double_processor",
+      [],
+      "transforms",
+      joinIcon,
+      defaultConfig,
+      form,
+    );
+  }
+
+  //now always available through requirements.txt
+  //    public provideDependencies({ config }): string[] {
+  //        const engine = config?.selectExecutionEngine ?? "pandas";
+  //        const deps: string[] = [];
+  //
+  //        if (engine === "polars") {
+  //            deps.push("polars", "pyarrow");
+  //        } else if (engine === "duckdb") {
+  //            deps.push("duckdb", "pyarrow");
+  //        }
+  //        // pandas assumed available, no extra deps
+  //        return deps;
+  //    }
+
+  public provideImports({ config }): string[] {
+    const engine = config?.selectExecutionEngine ?? "pandas";
+    //pandas always necessary, since output and input are still pandas df
+    const imports = ["import pandas as pd", "import warnings"];
+
+    if (engine === "polars") {
+      imports.push("import polars as pl", "import pyarrow");
+    } else if (engine === "duckdb") {
+      imports.push("import duckdb", "import pyarrow");
     }
+    return imports;
+  }
 
-    //now always available through requirements.txt
-    //    public provideDependencies({ config }): string[] {
-    //        const engine = config?.selectExecutionEngine ?? "pandas";
-    //        const deps: string[] = [];
-    //
-    //        if (engine === "polars") {
-    //            deps.push("polars", "pyarrow");
-    //        } else if (engine === "duckdb") {
-    //            deps.push("duckdb", "pyarrow");
-    //        }
-    //        // pandas assumed available, no extra deps
-    //        return deps;
-    //    }
-
-    public provideImports({ config }): string[] {
-        const engine = config?.selectExecutionEngine ?? "pandas";
-        //pandas always necessary, since output and input are still pandas df
-        const imports = ["import pandas as pd", "import warnings"];
-
-        if (engine === "polars") {
-            imports.push("import polars as pl", "import pyarrow");
-        } else if (engine === "duckdb") {
-            imports.push("import duckdb", "import pyarrow");
-        }
-        return imports;
-    }
-
-    public provideFunctions({ config }): string[] {
-        const prefix = config?.backend?.prefix ?? "pd";
-        // Function to perform frequency analysis
-        const JoinFunction = `
+  public provideFunctions({ config }): string[] {
+    const prefix = config?.backend?.prefix ?? "pd";
+    // Function to perform frequency analysis
+    const JoinFunction = `
 # Quote identifiers safely for DuckDB
 def quote_duckdb(col:str) -> str:           
   return f'"{col}"'
@@ -551,52 +647,67 @@ def advanced_join_with_operations(df1, df2, conditions, join_type='inner', same_
     return result.convert_dtypes()
 
     `;
-        return [JoinFunction];
+    return [JoinFunction];
+  }
+
+  public generateComponentCode({
+    config,
+    inputName1,
+    inputName2,
+    outputName,
+  }): string {
+    const const_ts_execution_engine = config.selectExecutionEngine ?? "pandas";
+    const rawJoinConditions =
+      config.joinConditions && config.joinConditions.length > 0
+        ? config.joinConditions
+        : (config.leftKeyColumn || []).map((leftColumn, index) => ({
+            leftColumn,
+            operation: "=",
+            rightColumn: config.rightKeyColumn?.[index],
+          }));
+
+    const joinConditions = rawJoinConditions.filter(
+      (condition) =>
+        condition?.leftColumn?.value && condition?.rightColumn?.value,
+    );
+    const hasNonEqualityOperation = joinConditions.some(
+      (condition) => (condition.operation || "=") !== "=",
+    );
+    const formatColumnReference = (column: any) =>
+      column?.named === false ? `${column.value}` : `"${column.value}"`;
+
+    const const_ts_leftKeys = joinConditions.map((condition) =>
+      formatColumnReference(condition.leftColumn),
+    );
+    const const_ts_rightKeys = joinConditions.map((condition) =>
+      formatColumnReference(condition.rightColumn),
+    );
+    const const_ts_joinType = config.selectJoinType ?? "left";
+    const const_ts_action_if_cartesian_product =
+      config.selectActionIfCartesianProduct ?? "0";
+    const const_ts_selectSameNameStrategy =
+      config.selectSameNameStrategy ?? "suffix_right";
+    const const_ts_leftKeysStr = `[${const_ts_leftKeys.join(", ")}]`;
+    const const_ts_rightKeysStr = `[${const_ts_rightKeys.join(", ")}]`;
+    const conditionsStr = `[${joinConditions
+      .map(
+        (condition) =>
+          `{"left": ${formatColumnReference(condition.leftColumn)}, "op": "${
+            condition.operation || "="
+          }", "right": ${formatColumnReference(condition.rightColumn)}}`,
+      )
+      .join(", ")}]`;
+
+    let code = `# Join ${inputName1} and ${inputName2}\n`;
+
+    if (const_ts_joinType !== "cross" && joinConditions.length === 0) {
+      code += `raise ValueError("At least one join condition is required.")\n`;
+    } else if (hasNonEqualityOperation) {
+      code += `${outputName}=advanced_join_with_operations(df1=${inputName1}, df2=${inputName2}, conditions=${conditionsStr}, join_type='${const_ts_joinType}', same_name_strategy='${const_ts_selectSameNameStrategy}')`;
+    } else {
+      code += `${outputName}=advanced_join(execution_engine='${const_ts_execution_engine}',df1=${inputName1}, df2=${inputName2}, key_left=${const_ts_leftKeysStr}, key_right=${const_ts_rightKeysStr}, join_type='${const_ts_joinType}', action_if_cartesian_product=${const_ts_action_if_cartesian_product},same_name_strategy='${const_ts_selectSameNameStrategy}')`;
     }
 
-
-    public generateComponentCode({ config, inputName1, inputName2, outputName }): string {
-
-        const const_ts_execution_engine = config.selectExecutionEngine ?? "pandas";
-        const rawJoinConditions =
-            config.joinConditions && config.joinConditions.length > 0
-                ? config.joinConditions
-                : (config.leftKeyColumn || []).map((leftColumn, index) => ({
-                    leftColumn,
-                    operation: "=",
-                    rightColumn: config.rightKeyColumn?.[index]
-                }));
-
-        const joinConditions = rawJoinConditions.filter(condition => condition?.leftColumn?.value && condition?.rightColumn?.value);
-        const hasNonEqualityOperation = joinConditions.some(condition => (condition.operation || "=") !== "=");
-        const formatColumnReference = (column: any) => (column?.named === false ? `${column.value}` : `"${column.value}"`);
-
-        const const_ts_leftKeys = joinConditions.map(condition => formatColumnReference(condition.leftColumn));
-        const const_ts_rightKeys = joinConditions.map(condition => formatColumnReference(condition.rightColumn));
-        const const_ts_joinType = config.selectJoinType ?? "left";
-        const const_ts_action_if_cartesian_product = config.selectActionIfCartesianProduct ?? "0";
-        const const_ts_selectSameNameStrategy = config.selectSameNameStrategy ?? "suffix_right";
-        const const_ts_leftKeysStr = `[${const_ts_leftKeys.join(', ')}]`;
-        const const_ts_rightKeysStr = `[${const_ts_rightKeys.join(', ')}]`;
-        const conditionsStr = `[${joinConditions
-            .map(
-                condition =>
-                    `{"left": ${formatColumnReference(condition.leftColumn)}, "op": "${condition.operation || "="}", "right": ${formatColumnReference(condition.rightColumn)}}`
-            )
-            .join(", ")}]`;
-
-        let code = `# Join ${inputName1} and ${inputName2}\n`;
-
-        if (const_ts_joinType !== "cross" && joinConditions.length === 0) {
-            code += `raise ValueError("At least one join condition is required.")\n`;
-        } else if (hasNonEqualityOperation) {
-            code += `${outputName}=advanced_join_with_operations(df1=${inputName1}, df2=${inputName2}, conditions=${conditionsStr}, join_type='${const_ts_joinType}', same_name_strategy='${const_ts_selectSameNameStrategy}')`;
-        } else {
-            code += `${outputName}=advanced_join(execution_engine='${const_ts_execution_engine}',df1=${inputName1}, df2=${inputName2}, key_left=${const_ts_leftKeysStr}, key_right=${const_ts_rightKeysStr}, join_type='${const_ts_joinType}', action_if_cartesian_product=${const_ts_action_if_cartesian_product},same_name_strategy='${const_ts_selectSameNameStrategy}')`;
-        }
-
-
-        return code;
-    }
-
+    return code;
+  }
 }

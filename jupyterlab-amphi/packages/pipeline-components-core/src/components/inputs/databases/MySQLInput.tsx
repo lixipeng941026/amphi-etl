@@ -1,10 +1,17 @@
-
-import { mySQLIcon } from '../../../icons';
-import { BaseCoreComponent } from '../../BaseCoreComponent';// Adjust the import path
+import { mySQLIcon } from "../../../icons";
+import { BaseCoreComponent } from "../../BaseCoreComponent"; // Adjust the import path
 
 export class MySQLInput extends BaseCoreComponent {
   constructor() {
-    const defaultConfig = { host: "localhost", port: "3306", databaseName: "", username: "", password: "", tableName: "", queryMethod: "table" };
+    const defaultConfig = {
+      host: "localhost",
+      port: "3306",
+      databaseName: "",
+      username: "",
+      password: "",
+      tableName: "",
+      queryMethod: "table",
+    };
     const form = {
       fields: [
         {
@@ -12,24 +19,24 @@ export class MySQLInput extends BaseCoreComponent {
           label: "Host",
           id: "host",
           placeholder: "Enter database host",
-          connection: 'Mysql',
-          advanced: true
+          connection: "Mysql",
+          advanced: true,
         },
         {
           type: "input",
           label: "Port",
           id: "port",
           placeholder: "Enter database port",
-          connection: 'Mysql',
-          advanced: true
+          connection: "Mysql",
+          advanced: true,
         },
         {
           type: "input",
           label: "Database Name",
           id: "databaseName",
           placeholder: "Enter database name",
-          connection: 'Mysql',
-          advanced: true
+          connection: "Mysql",
+          advanced: true,
         },
         {
           type: "input",
@@ -37,7 +44,7 @@ export class MySQLInput extends BaseCoreComponent {
           id: "username",
           placeholder: "Enter username",
           connection: "Mysql",
-          advanced: true
+          advanced: true,
         },
         {
           type: "input",
@@ -46,48 +53,63 @@ export class MySQLInput extends BaseCoreComponent {
           placeholder: "Enter password",
           inputType: "password",
           connection: "Mysql",
-          advanced: true
+          advanced: true,
         },
         {
           type: "radio",
           label: "Query Method",
           id: "queryMethod",
-          tooltip: "Select whether you want to specify the table name to retrieve data or use a custom SQL query for greater flexibility.",
+          tooltip:
+            "Select whether you want to specify the table name to retrieve data or use a custom SQL query for greater flexibility.",
           options: [
-            { value: "table", label: "Table Name" },
-            { value: "query", label: "SQL Query" }
+            { value: "table", label: "表名" },
+            // { value: "table", label: "Table Name" },
+            { value: "query", label: "SQL Query" },
           ],
-          advanced: true
+          advanced: true,
         },
         {
           type: "table",
-          label: "Table Name",
+          label: "表名",
+          // label: "Table Name",
           query: `SHOW TABLES;`,
           id: "tableName",
-          placeholder: "Enter table name",
-          condition: { queryMethod: "table" }
+          placeholder: "输入表名",
+          condition: { queryMethod: "table" },
         },
         {
           type: "codeTextarea",
           label: "SQL Query",
-          height: '50px',
+          height: "50px",
           mode: "sql",
-          placeholder: 'SELECT * FROM table_name',
+          placeholder: "SELECT * FROM table_name",
           id: "sqlQuery",
-          tooltip: 'Optional. By default the SQL query is: SELECT * FROM table_name_provided. If specified, the SQL Query is used.',
+          tooltip:
+            "Optional. By default the SQL query is: SELECT * FROM table_name_provided. If specified, the SQL Query is used.",
           advanced: true,
-          condition: { queryMethod: "query" }
-        }
+          condition: { queryMethod: "query" },
+        },
       ],
     };
-    const description = "Use MySQL Input to retrieve data from MySQL by specifying either a table name or a custom SQL query."
+    const description =
+      "Use MySQL Input to retrieve data from MySQL by specifying either a table name or a custom SQL query.";
 
-    super("MySQL Input", "mySQLInput", description, "pandas_df_input", [], "inputs.Databases", mySQLIcon, defaultConfig, form);
+    super(
+      "MySQL Input",
+      "mySQLInput",
+      description,
+      "pandas_df_input",
+      [],
+      "inputs.Databases",
+      mySQLIcon,
+      defaultConfig,
+      form,
+    );
   }
 
   public provideDependencies({ config }): string[] {
     let deps: string[] = [];
-    deps.push('pymysql');
+    deps.push("pymysql");
     return deps;
   }
 
@@ -112,7 +134,7 @@ ${connectionName} = sqlalchemy.create_engine("${connectionString}")
 
     let sqlQuery: string;
 
-    if (config.queryMethod === 'query' && config.sqlQuery) {
+    if (config.queryMethod === "query" && config.sqlQuery) {
       try {
         const parsedQuery = JSON.parse(config.sqlQuery);
         sqlQuery = parsedQuery.code?.trim();
@@ -122,7 +144,7 @@ ${connectionName} = sqlalchemy.create_engine("${connectionString}")
           if (tableReference) {
             sqlQuery = `SELECT * FROM ${tableReference}`;
           } else {
-            throw new Error('No SQL query provided and table name is missing');
+            throw new Error("No SQL query provided and table name is missing");
           }
         }
       } catch (e) {
@@ -131,20 +153,22 @@ ${connectionName} = sqlalchemy.create_engine("${connectionString}")
         if (tableReference) {
           sqlQuery = `SELECT * FROM ${tableReference}`;
         } else {
-          throw new Error('Invalid SQL query and no valid table name available');
+          throw new Error(
+            "Invalid SQL query and no valid table name available",
+          );
         }
       }
     } else {
       // Default to table query
       if (!tableReference) {
-        throw new Error('Table name is missing');
+        throw new Error("Table name is missing");
       }
       sqlQuery = `SELECT * FROM ${tableReference}`;
     }
 
     const connectionCode = this.generateDatabaseConnectionCode({
       config,
-      connectionName: uniqueEngineName
+      connectionName: uniqueEngineName,
     });
 
     const code = `

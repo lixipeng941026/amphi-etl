@@ -33,7 +33,7 @@ export class DatabaseOutput extends BaseCoreComponent {
       fields: [
         {
           type: "select",
-          label: "Database Type",
+          label: "数据库类型",
           id: "provider",
           options: [
             { value: "mysql", label: "MySQL" },

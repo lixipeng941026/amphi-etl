@@ -21,17 +21,27 @@ All components extend `BaseCoreComponent`, which provides the UI framework and l
 
 ```typescript
 export class BaseCoreComponent extends PipelineComponent<ComponentItem>() {
-  constructor(name, id, description, type, fileDrop, category, icon, defaultConfig, form) {
+  constructor(
+    name,
+    id,
+    description,
+    type,
+    fileDrop,
+    category,
+    icon,
+    defaultConfig,
+    form,
+  ) {
     super();
-    this._name = name;              // User-friendly name
-    this._id = id;                  // Unique identifier
+    this._name = name; // User-friendly name
+    this._id = id; // Unique identifier
     this._description = description; // Component description
-    this._type = type;              // Component type (see below)
-    this._fileDrop = fileDrop;      // File drop configuration
-    this._category = category;       // Category for organization
-    this._icon = icon;              // Icon for UI
-    this._default = defaultConfig;   // Default configuration
-    this._form = form;              // Form field definitions
+    this._type = type; // Component type (see below)
+    this._fileDrop = fileDrop; // File drop configuration
+    this._category = category; // Category for organization
+    this._icon = icon; // Icon for UI
+    this._default = defaultConfig; // Default configuration
+    this._form = form; // Form field definitions
   }
 }
 ```
@@ -40,32 +50,33 @@ export class BaseCoreComponent extends PipelineComponent<ComponentItem>() {
 
 Components are categorized by their input/output behavior:
 
-| Type | Description | Inputs | Outputs |
-|------|-------------|--------|---------|
-| `pandas_df_input` | Data source | None | 1 DataFrame |
-| `pandas_df_processor` | Single input transform | 1 DataFrame | 1 DataFrame |
-| `pandas_df_double_processor` | Two input transform | 2 DataFrames | 1 DataFrame |
-| `pandas_df_output` | Data sink | 1 DataFrame | None |
+| Type                         | Description            | Inputs       | Outputs     |
+| ---------------------------- | ---------------------- | ------------ | ----------- |
+| `pandas_df_input`            | Data source            | None         | 1 DataFrame |
+| `pandas_df_processor`        | Single input transform | 1 DataFrame  | 1 DataFrame |
+| `pandas_df_double_processor` | Two input transform    | 2 DataFrames | 1 DataFrame |
+| `pandas_df_output`           | Data sink              | 1 DataFrame  | None        |
 
 ### Component Properties
 
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `_name` | string | Yes | Display name shown in UI |
-| `_id` | string | Yes | Unique identifier (camelCase) |
-| `_description` | string | Yes | Component description (supports markdown) |
-| `_type` | string | Yes | Component type (see table above) |
-| `_category` | string | Yes | Category: "inputs", "transforms", "outputs", etc. |
-| `_icon` | object | Yes | Icon definition (React component) |
-| `_default` | object | Yes | Default configuration values |
-| `_form` | object | Yes | Form field definitions |
-| `_fileDrop` | array | No | File drop configuration |
+| Property       | Type   | Required | Description                                       |
+| -------------- | ------ | -------- | ------------------------------------------------- |
+| `_name`        | string | Yes      | Display name shown in UI                          |
+| `_id`          | string | Yes      | Unique identifier (camelCase)                     |
+| `_description` | string | Yes      | Component description (supports markdown)         |
+| `_type`        | string | Yes      | Component type (see table above)                  |
+| `_category`    | string | Yes      | Category: "inputs", "transforms", "outputs", etc. |
+| `_icon`        | object | Yes      | Icon definition (React component)                 |
+| `_default`     | object | Yes      | Default configuration values                      |
+| `_form`        | object | Yes      | Form field definitions                            |
+| `_fileDrop`    | array  | No       | File drop configuration                           |
 
 ## Creating a New Component
 
 ### Step 1: Create Component File
 
 Create a new file in the appropriate directory:
+
 - Inputs: [packages/pipeline-components-core/src/components/inputs/](packages/pipeline-components-core/src/components/inputs/)
 - Transforms: [packages/pipeline-components-core/src/components/transforms/](packages/pipeline-components-core/src/components/transforms/)
 - Outputs: [packages/pipeline-components-core/src/components/outputs/](packages/pipeline-components-core/src/components/outputs/)
@@ -73,15 +84,15 @@ Create a new file in the appropriate directory:
 ### Step 2: Basic Component Template
 
 ```typescript
-import { BaseCoreComponent } from '../BaseCoreComponent';
-import { myIcon } from '../../icons'; // Import your icon
+import { BaseCoreComponent } from "../BaseCoreComponent";
+import { myIcon } from "../../icons"; // Import your icon
 
 export class MyNewComponent extends BaseCoreComponent {
   constructor() {
     // Define default configuration
     const defaultConfig = {
       myParameter: "default value",
-      myOption: "option1"
+      myOption: "option1",
     };
 
     // Define form fields
@@ -94,7 +105,7 @@ export class MyNewComponent extends BaseCoreComponent {
           id: "myParameter",
           placeholder: "Enter value...",
           tooltip: "Help text for users",
-          required: true
+          required: true,
         },
         {
           type: "select",
@@ -102,10 +113,10 @@ export class MyNewComponent extends BaseCoreComponent {
           id: "myOption",
           options: [
             { value: "option1", label: "Option 1" },
-            { value: "option2", label: "Option 2" }
-          ]
-        }
-      ]
+            { value: "option2", label: "Option 2" },
+          ],
+        },
+      ],
     };
 
     // Component description
@@ -113,15 +124,15 @@ export class MyNewComponent extends BaseCoreComponent {
 
     // Call parent constructor
     super(
-      "My New Component",           // name
-      "myNewComponent",             // id
-      description,                  // description
-      "pandas_df_processor",        // type
-      [],                           // fileDrop
-      "transforms",                 // category
-      myIcon,                       // icon
-      defaultConfig,                // default config
-      form                          // form definition
+      "My New Component", // name
+      "myNewComponent", // id
+      description, // description
+      "pandas_df_processor", // type
+      [], // fileDrop
+      "transforms", // category
+      myIcon, // icon
+      defaultConfig, // default config
+      form, // form definition
     );
   }
 
@@ -170,18 +181,32 @@ Jane,Smith,34`;
           id: "inlineData",
           placeholder: "Enter your CSV data here",
           tooltip: "Type your CSV-like data directly. First line is header.",
-          aiInstructions: "Generate mock CSV-like data for demonstration purposes.",
+          aiInstructions:
+            "Generate mock CSV-like data for demonstration purposes.",
           aiGeneration: true,
           aiPromptExamples: [
-            { label: "Fake user data", value: "Generate fake user data with 5 rows" }
-          ]
-        }
-      ]
+            {
+              label: "Fake user data",
+              value: "Generate fake user data with 5 rows",
+            },
+          ],
+        },
+      ],
     };
 
-    const description = "Manually enter CSV-like data directly in the pipeline.";
-    super("Inline Input", "inlineInput", description, "pandas_df_input",
-          [], "inputs", editIcon, defaultConfig, form);
+    const description =
+      "Manually enter CSV-like data directly in the pipeline.";
+    super(
+      "Inline Input",
+      "inlineInput",
+      description,
+      "pandas_df_input",
+      [],
+      "inputs",
+      editIcon,
+      defaultConfig,
+      form,
+    );
   }
 
   public provideImports({ config }): string[] {
@@ -220,33 +245,42 @@ export class Deduplicate extends BaseCoreComponent {
             {
               value: "first",
               label: "First occurrence",
-              tooltip: "Drop duplicates except for the first"
+              tooltip: "Drop duplicates except for the first",
             },
             {
               value: "last",
               label: "Last occurrence",
-              tooltip: "Drop duplicates except for the last"
+              tooltip: "Drop duplicates except for the last",
             },
             {
               value: "False",
               label: "Drop all",
-              tooltip: "Drop all duplicates"
-            }
-          ]
+              tooltip: "Drop all duplicates",
+            },
+          ],
         },
         {
           type: "columns",
           label: "Columns",
           id: "subset",
           placeholder: "All columns",
-          tooltip: "Columns considered for identifying duplicates"
-        }
-      ]
+          tooltip: "Columns considered for identifying duplicates",
+        },
+      ],
     };
 
     const description = "Remove duplicate rows based on column values.";
-    super("Deduplicate Rows", "deduplicateData", description,
-          "pandas_df_processor", [], "transforms", dedupIcon, defaultConfig, form);
+    super(
+      "Deduplicate Rows",
+      "deduplicateData",
+      description,
+      "pandas_df_processor",
+      [],
+      "transforms",
+      dedupIcon,
+      defaultConfig,
+      form,
+    );
   }
 
   public provideImports({ config }): string[] {
@@ -254,24 +288,31 @@ export class Deduplicate extends BaseCoreComponent {
   }
 
   public generateComponentCode({ config, inputName, outputName }): string {
-    const subset = config.subset && Array.isArray(config.subset) ? config.subset : [];
+    const subset =
+      config.subset && Array.isArray(config.subset) ? config.subset : [];
 
     // Build subset parameter
-    const columns = subset.length > 0
-      ? `subset=[${subset.map(col => col.named ? `"${col.value}"` : col.value).join(', ')}]`
-      : '';
+    const columns =
+      subset.length > 0
+        ? `subset=[${subset
+            .map((col) => (col.named ? `"${col.value}"` : col.value))
+            .join(", ")}]`
+        : "";
 
     // Handle keep parameter
     let keep;
-    if (typeof config.keep === 'boolean') {
+    if (typeof config.keep === "boolean") {
       keep = config.keep ? `"first"` : "False";
     } else {
       keep = config.keep === "False" ? "False" : `"${config.keep}"`;
     }
 
-    const params = [columns, columns && keep ? `keep=${keep}` : !columns && keep ? `keep=${keep}` : '']
+    const params = [
+      columns,
+      columns && keep ? `keep=${keep}` : !columns && keep ? `keep=${keep}` : "",
+    ]
       .filter(Boolean)
-      .join(', ');
+      .join(", ");
 
     return `
 # Deduplicate rows
@@ -289,16 +330,16 @@ Form fields are defined in [packages/pipeline-components-manager/src/configUtils
 
 ```typescript
 export interface FieldDescriptor {
-  type: string;                    // Field type (see table below)
-  label: string;                   // Display label
-  id: string;                      // Field identifier (config key)
-  placeholder?: any;               // Placeholder text
-  tooltip?: string;                // Help text shown on hover
-  required?: boolean;              // Mark as required field
-  options?: Option[];              // Options for select/radio
-  advanced?: boolean;              // Show in advanced settings modal only
-  validation?: string;             // Regex validation pattern
-  validationMessage?: string;      // Error message for validation
+  type: string; // Field type (see table below)
+  label: string; // Display label
+  id: string; // Field identifier (config key)
+  placeholder?: any; // Placeholder text
+  tooltip?: string; // Help text shown on hover
+  required?: boolean; // Mark as required field
+  options?: Option[]; // Options for select/radio
+  advanced?: boolean; // Show in advanced settings modal only
+  validation?: string; // Regex validation pattern
+  validationMessage?: string; // Error message for validation
   condition?: Record<string, any>; // Conditional display logic
   // ... additional properties per field type
 }
@@ -309,6 +350,7 @@ export interface FieldDescriptor {
 #### Basic Input Types
 
 ##### `input` - Text Input
+
 ```typescript
 {
   type: "input",
@@ -323,6 +365,7 @@ export interface FieldDescriptor {
 ```
 
 ##### `password` - Password Input
+
 ```typescript
 {
   type: "password",
@@ -334,6 +377,7 @@ export interface FieldDescriptor {
 ```
 
 ##### `inputNumber` - Numeric Input
+
 ```typescript
 {
   type: "inputNumber",
@@ -347,6 +391,7 @@ export interface FieldDescriptor {
 ```
 
 ##### `boolean` - Toggle Switch
+
 ```typescript
 {
   type: "boolean",
@@ -357,18 +402,20 @@ export interface FieldDescriptor {
 ```
 
 ##### `date` - Date Picker
+
 ```typescript
 {
   type: "date",
   label: "Start Date",
   id: "startDate",
-  placeholder: "Select date"
+  placeholder: "选择日期"
 }
 ```
 
 #### Text Area Types
 
 ##### `textarea` - Multi-line Text
+
 ```typescript
 {
   type: "textarea",
@@ -381,6 +428,7 @@ export interface FieldDescriptor {
 ```
 
 ##### `codeTextarea` - Code Editor
+
 Code editor with syntax highlighting and AI assistance.
 
 ```typescript
@@ -405,6 +453,7 @@ Code editor with syntax highlighting and AI assistance.
 ```
 
 **AI Properties**:
+
 - `aiGeneration`: Enable AI code generation button
 - `aiDataSample`: Include input data sample in AI prompt
 - `aiInstructions`: Instructions for AI code generation
@@ -413,6 +462,7 @@ Code editor with syntax highlighting and AI assistance.
 #### Selection Types
 
 ##### `select` - Single Select Dropdown
+
 ```typescript
 {
   type: "select",
@@ -430,6 +480,7 @@ Code editor with syntax highlighting and AI assistance.
 ```
 
 ##### `radio` - Radio Button Group
+
 ```typescript
 {
   type: "radio",
@@ -443,6 +494,7 @@ Code editor with syntax highlighting and AI assistance.
 ```
 
 ##### `selectCustomizable` - Select with Custom Values
+
 Allows users to enter custom values not in the options list.
 
 ```typescript
@@ -461,6 +513,7 @@ Allows users to enter custom values not in the options list.
 ```
 
 ##### `selectMultipleCustomizable` - Multi-Select with Custom Values
+
 ```typescript
 {
   type: "selectMultipleCustomizable",
@@ -475,6 +528,7 @@ Allows users to enter custom values not in the options list.
 ```
 
 ##### `cascader` - Hierarchical Dropdown
+
 ```typescript
 {
   type: "cascader",
@@ -503,11 +557,13 @@ Allows users to enter custom values not in the options list.
 ```
 
 ##### `cascaderMultiple` - Multi-Select Hierarchical Dropdown
+
 Same as cascader but allows multiple selections.
 
 #### Column Selection Types
 
 ##### `column` - Single Column Selector
+
 Allows selecting a single column from input dataframe.
 
 ```typescript
@@ -524,6 +580,7 @@ Allows selecting a single column from input dataframe.
 ```
 
 **Column Value Structure**:
+
 ```typescript
 {
   value: "ColumnName",  // Column name
@@ -533,6 +590,7 @@ Allows selecting a single column from input dataframe.
 ```
 
 ##### `columns` - Multiple Column Selector
+
 Allows selecting multiple columns from input dataframe.
 
 ```typescript
@@ -548,16 +606,18 @@ Allows selecting multiple columns from input dataframe.
 ```
 
 **Returns Array**:
+
 ```typescript
 [
   { value: "FirstName", type: "string", named: true },
-  { value: "Age", type: "numeric", named: true }
-]
+  { value: "Age", type: "numeric", named: true },
+];
 ```
 
 #### Data Structure Types
 
 ##### `keyvalue` - Key-Value Pairs Editor
+
 ```typescript
 {
   type: "keyvalue",
@@ -568,14 +628,16 @@ Allows selecting multiple columns from input dataframe.
 ```
 
 **Data Structure**:
+
 ```typescript
 [
   { key: "param1", value: "value1" },
-  { key: "param2", value: "value2" }
-]
+  { key: "param2", value: "value2" },
+];
 ```
 
 ##### `valuesList` - List of Values
+
 ```typescript
 {
   type: "valuesList",
@@ -587,14 +649,13 @@ Allows selecting multiple columns from input dataframe.
 ```
 
 **Data Structure**:
+
 ```typescript
-[
-  { value: "value1" },
-  { value: "value2" }
-]
+[{ value: "value1" }, { value: "value2" }];
 ```
 
 ##### `keyvalueColumns` - Column Mapping
+
 Maps columns to values or other columns.
 
 ```typescript
@@ -607,16 +668,18 @@ Maps columns to values or other columns.
 ```
 
 **Data Structure**:
+
 ```typescript
 [
   {
     key: { value: "SourceCol", type: "string", named: true },
-    value: "TargetCol"
-  }
-]
+    value: "TargetCol",
+  },
+];
 ```
 
 ##### `keyvalueColumnsSelect` - Column to Selection Mapping
+
 ```typescript
 {
   type: "keyvalueColumnsSelect",
@@ -631,6 +694,7 @@ Maps columns to values or other columns.
 ```
 
 ##### `keyvalueColumnsRadio` - Column to Radio Selection
+
 ```typescript
 {
   type: "keyvalueColumnsRadio",
@@ -644,6 +708,7 @@ Maps columns to values or other columns.
 ```
 
 ##### `dataMapping` - Visual Data Field Mapping
+
 Advanced drag-and-drop field mapping interface.
 
 ```typescript
@@ -656,6 +721,7 @@ Advanced drag-and-drop field mapping interface.
 ```
 
 ##### `formulaColumns` - Formula Builder
+
 Allows building formulas/expressions for columns.
 
 ```typescript
@@ -668,6 +734,7 @@ Allows building formulas/expressions for columns.
 ```
 
 ##### `transferData` - Transfer List
+
 Drag-and-drop interface to move items between lists.
 
 ```typescript
@@ -680,6 +747,7 @@ Drag-and-drop interface to move items between lists.
 ```
 
 ##### `editableTable` - Editable Table
+
 Inline editable table for structured data.
 
 ```typescript
@@ -694,6 +762,7 @@ Inline editable table for structured data.
 #### File and Data Source Types
 
 ##### `file` - Single File Selector
+
 ```typescript
 {
   type: "file",
@@ -706,6 +775,7 @@ Inline editable table for structured data.
 ```
 
 ##### `files` - Multiple File Selector
+
 ```typescript
 {
   type: "files",
@@ -718,6 +788,7 @@ Inline editable table for structured data.
 ```
 
 ##### `table` - Database Table Selector
+
 Connects to database and lists tables.
 
 ```typescript
@@ -732,6 +803,7 @@ Connects to database and lists tables.
 ```
 
 ##### `collection` - MongoDB Collection Selector
+
 ```typescript
 {
   type: "collection",
@@ -744,6 +816,7 @@ Connects to database and lists tables.
 ```
 
 ##### `sheets` - Excel Sheet Selector
+
 ```typescript
 {
   type: "sheets",
@@ -757,6 +830,7 @@ Connects to database and lists tables.
 #### Other Types
 
 ##### `info` - Information Display
+
 Read-only information display (not a form input).
 
 ```typescript
@@ -769,6 +843,7 @@ Read-only information display (not a form input).
 ```
 
 ##### `selectTokenization` - Token-Based Multi-Select
+
 ```typescript
 {
   type: "selectTokenization",
@@ -865,6 +940,7 @@ Add helpful tooltips:
 ### Required Methods
 
 #### `provideImports()`
+
 Returns array of Python import statements needed by the component.
 
 ```typescript
@@ -885,6 +961,7 @@ public provideImports({ config }): string[] {
 ```
 
 #### `provideFunctions()`
+
 Returns array of Python helper function definitions.
 
 ```typescript
@@ -898,14 +975,17 @@ public provideFunctions({ config }): string[] {
 ```
 
 #### `generateComponentCode()`
+
 Main code generation method. Returns Python code as a string.
 
 **Parameters**:
+
 - `config`: Component configuration object (from form fields)
 - `inputName`: Variable name of input dataframe(s)
 - `outputName`: Variable name for output dataframe
 
 **For single input components**:
+
 ```typescript
 public generateComponentCode({ config, inputName, outputName }): string {
   // inputName is a string (e.g., "df_1")
@@ -920,6 +1000,7 @@ ${outputName}['new_column'] = ${outputName}['old_column'] * 2
 ```
 
 **For double input components**:
+
 ```typescript
 public generateComponentCode({ config, inputName, outputName }): string {
   // inputName is an array (e.g., ["df_1", "df_2"])
@@ -934,6 +1015,7 @@ ${outputName} = pd.merge(${leftDf}, ${rightDf}, on='id', how='inner')
 ```
 
 **For input components**:
+
 ```typescript
 public generateComponentCode({ config, outputName }): string {
   // No inputName - this is a data source
@@ -947,6 +1029,7 @@ ${outputName} = pd.read_csv("${filePath}").convert_dtypes()
 ```
 
 **For output components**:
+
 ```typescript
 public generateComponentCode({ config, inputName }): string {
   // No outputName - this is a data sink
@@ -962,6 +1045,7 @@ ${inputName}.to_csv("${filePath}", index=False)
 ### Code Generation Best Practices
 
 #### 1. Handle Missing Configuration
+
 ```typescript
 public generateComponentCode({ config, inputName, outputName }): string {
   const columns = config.columns || [];
@@ -975,6 +1059,7 @@ public generateComponentCode({ config, inputName, outputName }): string {
 ```
 
 #### 2. Escape Strings Properly
+
 ```typescript
 public generateComponentCode({ config, inputName, outputName }): string {
   // Escape quotes in strings
@@ -987,6 +1072,7 @@ ${outputName} = ${inputName}[${inputName}['text'].str.contains("${searchText}")]
 ```
 
 #### 3. Handle Column Metadata
+
 ```typescript
 public generateComponentCode({ config, inputName, outputName }): string {
   const columns = config.columns || [];
@@ -1003,6 +1089,7 @@ ${outputName} = ${inputName}[[${columnList}]]
 ```
 
 #### 4. Use Multi-line Strings for Readability
+
 ```typescript
 public generateComponentCode({ config, inputName, outputName }): string {
   const query = config.sqlQuery;
@@ -1018,6 +1105,7 @@ ${outputName} = pd.read_sql_query(query, connection)
 ```
 
 #### 5. Add Comments
+
 ```typescript
 public generateComponentCode({ config, inputName, outputName }): string {
   const operation = config.operation;
@@ -1086,12 +1174,12 @@ export class JoinDataframes extends BaseCoreComponent {
       "Join Dataframes",
       "joinDataframes",
       description,
-      "pandas_df_double_processor",  // Two inputs
+      "pandas_df_double_processor", // Two inputs
       [],
       "transforms",
       joinIcon,
       defaultConfig,
-      form
+      form,
     );
   }
 
@@ -1131,22 +1219,22 @@ const form = {
       id: "mode",
       options: [
         { value: "simple", label: "Simple" },
-        { value: "advanced", label: "Advanced" }
-      ]
+        { value: "advanced", label: "Advanced" },
+      ],
     },
     {
       type: "input",
       label: "Simple Value",
       id: "simpleValue",
-      condition: { mode: "simple" }  // Only shown in simple mode
+      condition: { mode: "simple" }, // Only shown in simple mode
     },
     {
       type: "codeTextarea",
       label: "Advanced Expression",
       id: "advancedExpression",
-      condition: { mode: "advanced" }  // Only shown in advanced mode
-    }
-  ]
+      condition: { mode: "advanced" }, // Only shown in advanced mode
+    },
+  ],
 };
 ```
 
@@ -1223,7 +1311,7 @@ Use private helper methods for cleaner code:
 ```typescript
 export class CSVOutput extends BaseCoreComponent {
   private buildWriteOptions(config: any): string {
-    const options: string[] = ['index=False'];
+    const options: string[] = ["index=False"];
 
     if (config.encoding) {
       options.push(`encoding="${config.encoding}"`);
@@ -1234,10 +1322,10 @@ export class CSVOutput extends BaseCoreComponent {
     }
 
     if (config.includeHeader === false) {
-      options.push('header=False');
+      options.push("header=False");
     }
 
-    return options.join(', ');
+    return options.join(", ");
   }
 
   public generateComponentCode({ config, inputName }): string {
@@ -1260,18 +1348,18 @@ Add your component to [packages/pipeline-components-core/src/components/index.ts
 
 ```typescript
 // Inputs
-export { CSVInput } from './inputs/CSVInput';
-export { InlineInput } from './inputs/InlineInput';
-export { MyNewInput } from './inputs/MyNewInput';  // Add your component
+export { CSVInput } from "./inputs/CSVInput";
+export { InlineInput } from "./inputs/InlineInput";
+export { MyNewInput } from "./inputs/MyNewInput"; // Add your component
 
 // Transforms
-export { Filter } from './transforms/Filter';
-export { Deduplicate } from './transforms/Deduplicate';
-export { MyNewTransform } from './transforms/MyNewTransform';  // Add your component
+export { Filter } from "./transforms/Filter";
+export { Deduplicate } from "./transforms/Deduplicate";
+export { MyNewTransform } from "./transforms/MyNewTransform"; // Add your component
 
 // Outputs
-export { CSVOutput } from './outputs/CSVOutput';
-export { MyNewOutput } from './outputs/MyNewOutput';  // Add your component
+export { CSVOutput } from "./outputs/CSVOutput";
+export { MyNewOutput } from "./outputs/MyNewOutput"; // Add your component
 ```
 
 ### Step 2: Build the Extension
@@ -1324,21 +1412,25 @@ print(code)
 ### Common Issues
 
 #### Component not appearing in palette
+
 - Check that component is exported in [index.ts](packages/pipeline-components-core/src/components/index.ts)
 - Rebuild: `jlpm build`
 - Refresh browser
 
 #### Form fields not rendering
+
 - Check field type spelling
 - Verify `idPrefix` is set
 - Check for required properties (type, label, id)
 
 #### Code generation errors
+
 - Add error handling for missing config values
 - Test with various configurations
 - Check for proper string escaping
 
 #### Validation errors
+
 - Ensure required fields are marked with `required: true`
 - Add validation patterns where needed
 - Test with invalid inputs

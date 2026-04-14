@@ -10,11 +10,11 @@ export class Filter extends BaseCoreComponent {
       fields: [
         {
           type: "radio",
-          label: "Type",
+          label: "类型",
           id: "filterType",
           options: [
-            { value: "basic", label: "Basic" },
-            { value: "advanced", label: "Advanced" },
+            { value: "basic", label: "基础" },
+            { value: "advanced", label: "高级" },
           ],
           advanced: true,
         },

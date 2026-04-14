@@ -1,5 +1,5 @@
-import { joinIcon } from '../../../icons';
-import { BaseCoreComponent } from '../../BaseCoreComponent';
+import { joinIcon } from "../../../icons";
+import { BaseCoreComponent } from "../../BaseCoreComponent";
 
 export class Join extends BaseCoreComponent {
   constructor() {
@@ -9,41 +9,87 @@ export class Join extends BaseCoreComponent {
       fields: [
         {
           type: "select",
-          label: "Join type",
+          label: "连接类型",
           id: "selectJoinType",
           placeholder: "Default: Inner",
           options: [
-            { value: "inner", label: "Inner", tooltip: "Return only the rows with matching keys in both datasets (intersection)." },
-            { value: "left", label: "Left", tooltip: "Return all rows from the left dataset and matched rows from the right dataset (including NaN for no match)." },
-            { value: "right", label: "Right", tooltip: "Return all rows from the right dataset and matched rows from the left dataset (including NaN for no match)." },
-            { value: "outer", label: "Outer", tooltip: "Return all rows from both datasets, with matches where available and NaN for no match (union)." },
-            { value: "cross", label: "Cross", tooltip: "Creates the cartesian product from both datasets, preserves the order of the left keys." },
-            { value: "anti-left", label: "Anti Left", tooltip: "Return rows from the left dataset that do not have matching rows in the right dataset." },
-            { value: "anti-right", label: "Anti Right", tooltip: "Return rows from the right dataset that do not have matching rows in the left dataset." }
-          ]
+            {
+              value: "inner",
+              label: "Inner",
+              tooltip:
+                "Return only the rows with matching keys in both datasets (intersection).",
+            },
+            {
+              value: "left",
+              label: "Left",
+              tooltip:
+                "Return all rows from the left dataset and matched rows from the right dataset (including NaN for no match).",
+            },
+            {
+              value: "right",
+              label: "Right",
+              tooltip:
+                "Return all rows from the right dataset and matched rows from the left dataset (including NaN for no match).",
+            },
+            {
+              value: "outer",
+              label: "Outer",
+              tooltip:
+                "Return all rows from both datasets, with matches where available and NaN for no match (union).",
+            },
+            {
+              value: "cross",
+              label: "Cross",
+              tooltip:
+                "Creates the cartesian product from both datasets, preserves the order of the left keys.",
+            },
+            {
+              value: "anti-left",
+              label: "Anti Left",
+              tooltip:
+                "Return rows from the left dataset that do not have matching rows in the right dataset.",
+            },
+            {
+              value: "anti-right",
+              label: "Anti Right",
+              tooltip:
+                "Return rows from the right dataset that do not have matching rows in the left dataset.",
+            },
+          ],
         },
         {
           type: "columnOperationColumn",
-          label: "Join Conditions",
+          label: "连接条件",
           id: "joinConditions",
-          tooltip: "Define one or more join conditions with left column, operator, and right column.",
+          tooltip: "定义一个或多个左列、操作符和右列的连接条件。",
           options: [
             { value: "=", label: "=" },
             { value: ">", label: ">" },
             { value: "<", label: "<" },
             { value: ">=", label: ">=" },
-            { value: "<=", label: "<=" }
+            { value: "<=", label: "<=" },
           ],
           operatorControlFieldId: "selectExecutionEngine",
           operatorLockedValues: ["pandas"],
           operatorLockedWhenMissing: true,
-          advanced: true
-        }
+          advanced: true,
+        },
       ],
     };
-    const description = "Use Join Datasets to combine two datasets by one or more columns."
+    const description =
+      "Use Join Datasets to combine two datasets by one or more columns.";
 
-    super("Join Datasets", "join", description, "pandas_df_double_processor", [], "transforms", joinIcon, defaultConfig, form);
+    super(
+      "Join Datasets",
+      "join",
+      description,
+      "pandas_df_double_processor",
+      [],
+      "transforms",
+      joinIcon,
+      defaultConfig,
+      form,
+    );
   }
 
   public provideImports({ config }): string[] {
@@ -143,31 +189,47 @@ def join_with_column_operations(df_left, df_right, conditions, join_type="inner"
     return [joinWithOperations];
   }
 
-  public generateComponentCode({ config, inputName1, inputName2, outputName }): string {
-
+  public generateComponentCode({
+    config,
+    inputName1,
+    inputName2,
+    outputName,
+  }): string {
     const prefix = config?.backend?.prefix ?? "pd";
     const joinType = config.selectJoinType || "left";
     const rawJoinConditions =
       config.joinConditions && config.joinConditions.length > 0
         ? config.joinConditions
         : (config.leftKeyColumn || []).map((leftColumn, index) => ({
-          leftColumn,
-          operation: "=",
-          rightColumn: config.rightKeyColumn?.[index]
-        }));
+            leftColumn,
+            operation: "=",
+            rightColumn: config.rightKeyColumn?.[index],
+          }));
 
-    const joinConditions = rawJoinConditions.filter(condition => condition?.leftColumn?.value && condition?.rightColumn?.value);
-    const hasNonEqualityOperation = joinConditions.some(condition => (condition.operation || "=") !== "=");
-    const formatColumnReference = (column: any) => (column?.named === false ? `${column.value}` : `"${column.value}"`);
+    const joinConditions = rawJoinConditions.filter(
+      (condition) =>
+        condition?.leftColumn?.value && condition?.rightColumn?.value,
+    );
+    const hasNonEqualityOperation = joinConditions.some(
+      (condition) => (condition.operation || "=") !== "=",
+    );
+    const formatColumnReference = (column: any) =>
+      column?.named === false ? `${column.value}` : `"${column.value}"`;
 
-    const leftKeys = joinConditions.map(condition => formatColumnReference(condition.leftColumn));
-    const rightKeys = joinConditions.map(condition => formatColumnReference(condition.rightColumn));
-    const leftKeysStr = `[${leftKeys.join(', ')}]`;
-    const rightKeysStr = `[${rightKeys.join(', ')}]`;
+    const leftKeys = joinConditions.map((condition) =>
+      formatColumnReference(condition.leftColumn),
+    );
+    const rightKeys = joinConditions.map((condition) =>
+      formatColumnReference(condition.rightColumn),
+    );
+    const leftKeysStr = `[${leftKeys.join(", ")}]`;
+    const rightKeysStr = `[${rightKeys.join(", ")}]`;
     const conditionsStr = `[${joinConditions
       .map(
-        condition =>
-          `{"left": ${formatColumnReference(condition.leftColumn)}, "op": "${condition.operation || "="}", "right": ${formatColumnReference(condition.rightColumn)}}`
+        (condition) =>
+          `{"left": ${formatColumnReference(condition.leftColumn)}, "op": "${
+            condition.operation || "="
+          }", "right": ${formatColumnReference(condition.rightColumn)}}`,
       )
       .join(", ")}]`;
 
