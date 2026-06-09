@@ -5,6 +5,6 @@ polars==1.32.2
 duckdb==1.3.2
 pyarrow==21.0.0
 # amphi-scheduler==0.9.5
-../jupyterlab-amphi
-../amphi-scheduler
-.
+-e ../jupyterlab-amphi
+-e ../amphi-scheduler
+-e .

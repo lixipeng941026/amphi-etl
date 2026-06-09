@@ -4,3 +4,38 @@
 *.ipynb
 .jupyter_ystore.db
 .venv
+.amphi_venv
+# Python 虚拟环境
+amphi_venv/
+venv/
+.env/
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Node 依赖
+node_modules/
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.pnp.*
+
+# 构建产物
+dist/
+build/
+*.egg-info/
+
+# Amphi 自动生成的版本文件（之前出过问题）
+amphi/_version.py
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# 操作系统
+.DS_Store
+Thumbs.db

@@ -1,893 +1,871 @@
-import {
-  ILayoutRestorer,
-  JupyterFrontEnd,
-  JupyterFrontEndPlugin
-} from '@jupyterlab/application';
+import { ILayoutRestorer, JupyterFrontEnd, JupyterFrontEndPlugin } from "@jupyterlab/application";
 
 import {
-  ICommandPalette,
-  ISessionContextDialogs,
-  IToolbarWidgetRegistry,
-  IWidgetTracker,
-  Notification,
-  WidgetTracker
-} from '@jupyterlab/apputils';
-import { DocumentWidget } from '@jupyterlab/docregistry';
-import { IMainMenu } from '@jupyterlab/mainmenu';
-import { ISettingRegistry } from '@jupyterlab/settingregistry';
-import { ILauncher } from '@jupyterlab/launcher';
-import { IDefaultFileBrowser, IFileBrowserFactory } from '@jupyterlab/filebrowser';
-import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
-import { IStatusBar } from '@jupyterlab/statusbar';
-import { ReadonlyPartialJSONObject, Token } from '@lumino/coreutils';
-import { IDocumentManager } from '@jupyterlab/docmanager';
-import { LIB_VERSION } from './version';
-import { Dialog, showDialog } from '@jupyterlab/apputils';
-import { createAboutDialog } from './AboutDialog';
-import { RunService } from './RunService'
-import { viewData } from './ViewData'
-import { ComponentManager, CodeGenerator, CodeGeneratorDagster, PipelineService, IPipelineExecutionToken, IPipelineExecutionService } from '@amphi/pipeline-components-manager';
-import { pipelineCategoryIcon, pipelineBrandIcon, componentIcon, gridAltIcon } from './icons';
-import { PipelineEditorFactory, commandIDs } from './PipelineEditorWidget';
-import { showErrorModal } from './ErrorModal';
-import { PipelineExecutionService } from './ExecutionService';
-import posthog from 'posthog-js'
+   ICommandPalette,
+   ISessionContextDialogs,
+   IToolbarWidgetRegistry,
+   IWidgetTracker,
+   Notification,
+   WidgetTracker,
+} from "@jupyterlab/apputils";
+import { DocumentWidget } from "@jupyterlab/docregistry";
+import { IMainMenu } from "@jupyterlab/mainmenu";
+import { ISettingRegistry } from "@jupyterlab/settingregistry";
+import { ILauncher } from "@jupyterlab/launcher";
+import { IDefaultFileBrowser, IFileBrowserFactory } from "@jupyterlab/filebrowser";
+import { IRenderMimeRegistry } from "@jupyterlab/rendermime";
+import { IStatusBar } from "@jupyterlab/statusbar";
+import { ReadonlyPartialJSONObject, Token } from "@lumino/coreutils";
+import { IDocumentManager } from "@jupyterlab/docmanager";
+import { LIB_VERSION } from "./version";
+import { Dialog, showDialog } from "@jupyterlab/apputils";
+import { createAboutDialog } from "./AboutDialog";
+import { RunService } from "./RunService";
+import { viewData } from "./ViewData";
+import {
+   ComponentManager,
+   CodeGenerator,
+   CodeGeneratorDagster,
+   PipelineService,
+   IPipelineExecutionToken,
+   IPipelineExecutionService,
+} from "@amphi/pipeline-components-manager";
+import { pipelineCategoryIcon, pipelineBrandIcon, componentIcon, gridAltIcon } from "./icons";
+import { PipelineEditorFactory, commandIDs } from "./PipelineEditorWidget";
+import { showErrorModal } from "./ErrorModal";
+import { PipelineExecutionService } from "./ExecutionService";
+import posthog from "posthog-js";
 
-import { LabIcon } from '@jupyterlab/ui-components';
-import React from 'react';
+import { LabIcon } from "@jupyterlab/ui-components";
+import React from "react";
 
 /**
  * The command IDs used by the Amphi pipeline editor plugin.
  */
 namespace CommandIDs {
-  export const create = 'pipeline-editor:create-new';
-  export const restartPipelineKernel = 'pipeline-editor:restart-kernel';
-  export const runPipeline = 'pipeline-editor:run-pipeline';
-  export const runPipelineUntil = 'pipeline-editor:run-pipeline-until';
-  export const runIncrementalPipeline = 'pipeline-editor:run-incremental-pipeline';
-  export const runIncrementalPipelineUntil = 'pipeline-editor:run-incremental-pipeline-until';
-  export const generateCode = 'pipeline-editor:generate-code';
-
+   export const create = "pipeline-editor:create-new";
+   export const restartPipelineKernel = "pipeline-editor:restart-kernel";
+   export const runPipeline = "pipeline-editor:run-pipeline";
+   export const runPipelineUntil = "pipeline-editor:run-pipeline-until";
+   export const runIncrementalPipeline = "pipeline-editor:run-incremental-pipeline";
+   export const runIncrementalPipelineUntil = "pipeline-editor:run-incremental-pipeline-until";
+   export const generateCode = "pipeline-editor:generate-code";
 }
 
-const PIPELINE_FACTORY = 'Pipeline Editor';
-const PIPELINE = 'amphi-pipeline';
-const PIPELINE_EDITOR_NAMESPACE = 'amphi-pipeline-editor';
-const EXTENSION_ID = '@amphi/pipeline-editor:extension';
-const EXTENSION_TRACKER = 'pipeline-editor-tracker';
+const PIPELINE_FACTORY = "Pipeline Editor";
+const PIPELINE = "amphi-pipeline";
+const PIPELINE_EDITOR_NAMESPACE = "amphi-pipeline-editor";
+const EXTENSION_ID = "@amphi/pipeline-editor:extension";
+const EXTENSION_TRACKER = "pipeline-editor-tracker";
 
 // Export a token so other extensions can require it
-export const IPipelineTracker = new Token<IWidgetTracker<DocumentWidget>>(
-  EXTENSION_TRACKER
-);
+export const IPipelineTracker = new Token<IWidgetTracker<DocumentWidget>>(EXTENSION_TRACKER);
 
 /**
  * Initialization data for the Pipeline Editor (DocumentWidget) extension.
  */
 const pipelineEditor: JupyterFrontEndPlugin<WidgetTracker<DocumentWidget>> = {
-  id: EXTENSION_ID,
-  autoStart: true,
-  requires: [
-    ICommandPalette,
-    IRenderMimeRegistry,
-    ILauncher,
-    IFileBrowserFactory,
-    IDefaultFileBrowser,
-    IStatusBar,
-    ILayoutRestorer,
-    IMainMenu,
-    ISettingRegistry,
-    IToolbarWidgetRegistry,
-    ISessionContextDialogs,
-    IDocumentManager,
-    ComponentManager,
-    IPipelineExecutionToken
-  ],
-  provides: IPipelineTracker,
-  activate: (
-    app: JupyterFrontEnd,
-    palette: ICommandPalette,
-    rendermimeRegistry: IRenderMimeRegistry,
-    launcher: ILauncher,
-    browserFactory: IFileBrowserFactory,
-    defaultFileBrowser: IDefaultFileBrowser,
-    statusBar: IStatusBar,
-    restorer: ILayoutRestorer,
-    menu: IMainMenu,
-    settings: ISettingRegistry,
-    toolbarRegistry: IToolbarWidgetRegistry,
-    sessionDialogs: ISessionContextDialogs,
-    manager: IDocumentManager,
-    componentService: any,
-    executionService: any
-  ): WidgetTracker<DocumentWidget> => {
-    console.log("Amphi Pipeline Extension activation...")
+   id: EXTENSION_ID,
+   autoStart: true,
+   requires: [
+      ICommandPalette,
+      IRenderMimeRegistry,
+      ILauncher,
+      IFileBrowserFactory,
+      IDefaultFileBrowser,
+      IStatusBar,
+      ILayoutRestorer,
+      IMainMenu,
+      ISettingRegistry,
+      IToolbarWidgetRegistry,
+      ISessionContextDialogs,
+      IDocumentManager,
+      ComponentManager,
+      IPipelineExecutionToken,
+   ],
+   provides: IPipelineTracker,
+   activate: (
+      app: JupyterFrontEnd,
+      palette: ICommandPalette,
+      rendermimeRegistry: IRenderMimeRegistry,
+      launcher: ILauncher,
+      browserFactory: IFileBrowserFactory,
+      defaultFileBrowser: IDefaultFileBrowser,
+      statusBar: IStatusBar,
+      restorer: ILayoutRestorer,
+      menu: IMainMenu,
+      settings: ISettingRegistry,
+      toolbarRegistry: IToolbarWidgetRegistry,
+      sessionDialogs: ISessionContextDialogs,
+      manager: IDocumentManager,
+      componentService: any,
+      executionService: any,
+   ): WidgetTracker<DocumentWidget> => {
+      console.log("Amphi Pipeline Extension activation...");
 
-    // Get app commands and define create-pipeline command
-    const { commands } = app;
-    const command = CommandIDs.create;
+      // 立即隐藏组件面板图标
+      const hideComponentsPanel = () => {
+         document.querySelectorAll('.lm-TabBar-tab[data-id="amphi-components-panel"]').forEach((tab) => {
+            (tab as HTMLElement).style.cssText =
+               "display: none !important; visibility: hidden !important; width: 0 !important; height: 0 !important; padding: 0 !important; margin: 0 !important; border: none !important;";
+         });
+      };
 
-    // Pipeline Tracker
-    const pipelineEditortracker = new WidgetTracker<DocumentWidget>({
-      namespace: PIPELINE_EDITOR_NAMESPACE
-    });
+      // 立即执行
+      hideComponentsPanel();
 
-    let enableExecution: boolean;
-    let enableDebugMode: boolean;
-    let enableTelemetry: boolean;
-    let defaultEngineBackend: string;
-
-    // Fetch the initial state of the settings.
-    function loadSetting(setting: ISettingRegistry.ISettings): void {
-      // Read the settings and convert to the correct type
-      enableExecution = setting.get('enableExecution').composite as boolean;
-      console.log(
-        `Settings extension: enableExecution is set to '${enableExecution}'`
-      );
-      enableDebugMode = setting.get('enableDebugMode').composite as boolean;
-      console.log(
-        `Settings extension: enableDebugMode is set to '${enableDebugMode}'`
-      );
-      defaultEngineBackend = setting.get('defaultEngineBackend').composite as string;
-      console.log(
-        `Settings extension: defaultEngineBackend is set to '${defaultEngineBackend}'`
-      );
-      enableTelemetry = setting.get('enableTelemetry').composite as boolean;
-      console.log(
-        `Settings extension: enableTelemetry is set to '${enableTelemetry}'`
-      );
-    }
-
-    function maskedSensitiveParams(url) {
-      try {
-        const parsedUrl = new URL(url);
-        return `${parsedUrl.protocol}//${parsedUrl.host}`;
-      } catch (error) {
-        // Return original URL if parsing fails
-        return url;
+      // DOM 加载完成后再次执行
+      if (document.readyState === "loading") {
+         document.addEventListener("DOMContentLoaded", hideComponentsPanel);
+      } else {
+         hideComponentsPanel();
       }
-    }
 
-    Promise.all([app.restored, settings.load(EXTENSION_ID)])
-      .then(([, settings]) => {
-        // Read the settings
-        loadSetting(settings);
+      // 持续监听
+      const observer = new MutationObserver(hideComponentsPanel);
+      observer.observe(document.documentElement, { childList: true, subtree: true });
 
-        // Listen for your plugin setting changes using Signal
-        settings.changed.connect(loadSetting);
-        let componentPalette = settings.get('componentPalette').composite as boolean;
-        console.log(
-          `Settings extension: componentPalette is set to '${componentPalette}'`
-        );
-        let enableTelemetry = settings.get('enableTelemetry').composite as boolean;
-        if (enableTelemetry) {
+      // 原有代码继续...
+      console.log("Amphi Pipeline Extension activation...");
+      // Get app commands and define create-pipeline command
+      const { commands } = app;
+      const command = CommandIDs.create;
 
-          posthog.init('phc_V56mYhYAQdzJl5tMM2RFedJWbXlbyxDnSj2KMbUX8x3', {
-            api_host: 'https://us.i.posthog.com',
-            autocapture: false,
-            person_profiles: 'always',
-            sanitize_properties: function (properties, _event) {
-              // Sanitize current url
-              if (properties[`$current_url`]) {
-                properties[`$current_url`] = maskedSensitiveParams(properties[`$current_url`]);
-              }
+      // Pipeline Tracker
+      const pipelineEditortracker = new WidgetTracker<DocumentWidget>({
+         namespace: PIPELINE_EDITOR_NAMESPACE,
+      });
 
-              // Remove path name
-              if (properties[`$path_name`]) {
-                properties[`$path_name`] = '';
-              }
-              return properties;
-            }
-          })
-        }
+      let enableExecution: boolean;
+      let enableDebugMode: boolean;
+      let enableTelemetry: boolean;
+      let defaultEngineBackend: string;
 
-        // Set up new widget Factory for .ampln files
-        const pipelineEditorFactory = new PipelineEditorFactory({
-          app: app,
-          name: PIPELINE_FACTORY,
-          fileTypes: [PIPELINE],
-          defaultFor: [PIPELINE],
-          canStartKernel: true,
-          preferKernel: true,
-          shutdownOnClose: true,
-          // shell: app.shell,
-          toolbarRegistry: toolbarRegistry,
-          // commands: app.commands,
-          rendermime: rendermimeRegistry,
-          browserFactory: browserFactory,
-          defaultFileBrowser: defaultFileBrowser,
-          // serviceManager: app.serviceManager,
-          settings: settings,
-          componentService: componentService,
-          executionService: executionService
-        });
+      // Fetch the initial state of the settings.
+      function loadSetting(setting: ISettingRegistry.ISettings): void {
+         // Read the settings and convert to the correct type
+         enableExecution = setting.get("enableExecution").composite as boolean;
+         console.log(`Settings extension: enableExecution is set to '${enableExecution}'`);
+         enableDebugMode = setting.get("enableDebugMode").composite as boolean;
+         console.log(`Settings extension: enableDebugMode is set to '${enableDebugMode}'`);
+         defaultEngineBackend = setting.get("defaultEngineBackend").composite as string;
+         console.log(`Settings extension: defaultEngineBackend is set to '${defaultEngineBackend}'`);
+         enableTelemetry = setting.get("enableTelemetry").composite as boolean;
+         console.log(`Settings extension: enableTelemetry is set to '${enableTelemetry}'`);
+      }
 
-        // Add the widget to the tracker when it's created
-        pipelineEditorFactory.widgetCreated.connect((sender, widget) => {
-          pipelineEditortracker.add(widget);
+      function maskedSensitiveParams(url) {
+         try {
+            const parsedUrl = new URL(url);
+            return `${parsedUrl.protocol}//${parsedUrl.host}`;
+         } catch (error) {
+            // Return original URL if parsing fails
+            return url;
+         }
+      }
 
-          // Notify the widget tracker if restore data needs to update
-          widget.context.pathChanged.connect(() => {
-            pipelineEditortracker.save(widget);
-          });
+      Promise.all([app.restored, settings.load(EXTENSION_ID)])
+         .then(([, settings]) => {
+            // Read the settings
+            loadSetting(settings);
 
-        });
+            // Listen for your plugin setting changes using Signal
+            settings.changed.connect(loadSetting);
+            let componentPalette = settings.get("componentPalette").composite as boolean;
+            console.log(`Settings extension: componentPalette is set to '${componentPalette}'`);
+            let enableTelemetry = settings.get("enableTelemetry").composite as boolean;
+            if (enableTelemetry) {
+               posthog.init("phc_V56mYhYAQdzJl5tMM2RFedJWbXlbyxDnSj2KMbUX8x3", {
+                  api_host: "https://us.i.posthog.com",
+                  autocapture: false,
+                  person_profiles: "always",
+                  sanitize_properties: function (properties, _event) {
+                     // Sanitize current url
+                     if (properties[`$current_url`]) {
+                        properties[`$current_url`] = maskedSensitiveParams(properties[`$current_url`]);
+                     }
 
-        // Add the default behavior of opening the widget for .ampln files
-        // First the Pipeline and then JSON (available)
-        app.docRegistry.addFileType(
-          {
-            name: 'amphi-pipeline',
-            displayName: 'pipeline',
-            extensions: ['.ampln'],
-            icon: pipelineBrandIcon,
-            fileFormat: 'text'
-          },
-          [PIPELINE_FACTORY, 'JSON']
-        );
-        app.docRegistry.addWidgetFactory(pipelineEditorFactory);
-
-        app.docRegistry.addFileType(
-          {
-            name: 'amphi-component',
-            displayName: 'component',
-            extensions: ['.amcpn'],
-            icon: componentIcon,
-            fileFormat: 'text'
-          },
-          ['JSON']
-        );
-
-
-        app.docRegistry.addFileType(
-          {
-            name: 'amphi-component',
-            displayName: 'component',
-            extensions: ['.amcpn'],
-            icon: componentIcon,
-            fileFormat: 'text'
-          },
-          ['JSON']
-        );
-
-
-        // Add command to create new Pipeline
-        commands.addCommand(command, {
-          label: args =>
-            args['isPalette'] || args['isContextMenu']
-              ? 'New Pipeline'
-              : 'New Pipeline',
-          caption: 'Create a new pipeline',
-          icon: (args) => (args['isPalette'] ? null : pipelineCategoryIcon),
-          execute: async args => {
-
-            return commands.execute(commandIDs.newDocManager, {
-              type: 'file',
-              path: defaultFileBrowser.model.path,
-              ext: '.ampln'
-            })
-              .then(async model => {
-                const runtime_type = 'LOCAL';
-
-                const getPipelineId = () => `pipeline_${+new Date()}`;
-
-                const pipelineJson = {
-                  doc_type: 'Amphi Pipeline',
-                  version: '1',
-                  id: getPipelineId(),
-                  pipelines: [
-                    {
-                      id: 'primary',
-                      flow: {
-                        nodes: [
-                        ],
-                        edges: [
-                        ],
-                        viewport: {
-                          x: 0,
-                          y: 0,
-                          zoom: 1
-                        }
-                      },
-                      app_data: {
-                        ui_data: {
-                          comments: []
-                        },
-                        version: 1,
-                        runtime_type
-                      },
-                      runtime_ref: 'python'
-                    }
-                  ]
-                };
-
-                // Open Pipeline using Pipeline EditorFactory
-                const newWidget = await app.commands.execute(
-                  commandIDs.openDocManager,
-                  {
-                    path: model.path,
-                    factory: PIPELINE_FACTORY // Use PipelineEditorFactory
-                  }
-                );
-
-                // Assign to the new widget context the pipeline JSON from above
-                newWidget.context.ready.then(() => {
-
-                  newWidget.context.model.fromJSON(pipelineJson);
-
-                  // Save this in the file
-                  app.commands.execute(commandIDs.saveDocManager, {
-                    path: model.path
-                  });
-
-                });
-              });
-
-          }
-        });
-
-        // Get the current widget and activate unless the args specify otherwise.
-        function getCurrent(args: ReadonlyPartialJSONObject): any | null {
-          const widget = pipelineEditortracker.currentWidget;
-          const activate = args['activate'] !== false;
-
-          if (activate && widget) {
-            app.shell.activateById(widget.id);
-          }
-
-          return widget ?? null;
-        }
-
-        function isEnabled(): boolean {
-          return (
-            pipelineEditortracker.currentWidget !== null &&
-            pipelineEditortracker.currentWidget === app.shell.currentWidget
-          );
-        }
-
-        /**
-         * Restart the Pipeline Kernel linked to the current Editor
-         */
-        commands.addCommand(CommandIDs.restartPipelineKernel, {
-          label: 'Restart Runtime…',
-          execute: async args => {
-            const current = getCurrent({ activate: false, ...args });
-            if (!current) {
-              return;
+                     // Remove path name
+                     if (properties[`$path_name`]) {
+                        properties[`$path_name`] = "";
+                     }
+                     return properties;
+                  },
+               });
             }
 
-            // Show pending notification
-            const notificationId = Notification.emit(
-              'Restarting environment...',
-              'in-progress',
-              { autoClose: false }
+            // Set up new widget Factory for .ampln files
+            const pipelineEditorFactory = new PipelineEditorFactory({
+               app: app,
+               name: PIPELINE_FACTORY,
+               fileTypes: [PIPELINE],
+               defaultFor: [PIPELINE],
+               canStartKernel: true,
+               preferKernel: true,
+               shutdownOnClose: true,
+               // shell: app.shell,
+               toolbarRegistry: toolbarRegistry,
+               // commands: app.commands,
+               rendermime: rendermimeRegistry,
+               browserFactory: browserFactory,
+               defaultFileBrowser: defaultFileBrowser,
+               // serviceManager: app.serviceManager,
+               settings: settings,
+               componentService: componentService,
+               executionService: executionService,
+            });
+
+            // Add the widget to the tracker when it's created
+            pipelineEditorFactory.widgetCreated.connect((sender, widget) => {
+               pipelineEditortracker.add(widget);
+
+               // Notify the widget tracker if restore data needs to update
+               widget.context.pathChanged.connect(() => {
+                  pipelineEditortracker.save(widget);
+               });
+            });
+
+            // Add the default behavior of opening the widget for .ampln files
+            // First the Pipeline and then JSON (available)
+            app.docRegistry.addFileType(
+               {
+                  name: "amphi-pipeline",
+                  displayName: "pipeline",
+                  extensions: [".ampln"],
+                  icon: pipelineBrandIcon,
+                  fileFormat: "text",
+               },
+               [PIPELINE_FACTORY, "JSON"],
+            );
+            app.docRegistry.addWidgetFactory(pipelineEditorFactory);
+
+            app.docRegistry.addFileType(
+               {
+                  name: "amphi-component",
+                  displayName: "component",
+                  extensions: [".amcpn"],
+                  icon: componentIcon,
+                  fileFormat: "text",
+               },
+               ["JSON"],
             );
 
-            try {
-              await current.context.sessionContext.restartKernel();
+            app.docRegistry.addFileType(
+               {
+                  name: "amphi-component",
+                  displayName: "component",
+                  extensions: [".amcpn"],
+                  icon: componentIcon,
+                  fileFormat: "text",
+               },
+               ["JSON"],
+            );
 
-              // Dismiss pending notification
-              Notification.dismiss(notificationId);
+            // Add command to create new Pipeline
+            commands.addCommand(command, {
+               label: (args) => (args["isPalette"] || args["isContextMenu"] ? "New Pipeline" : "New Pipeline"),
+               caption: "Create a new pipeline",
+               icon: (args) => (args["isPalette"] ? null : pipelineCategoryIcon),
+               execute: async (args) => {
+                  return commands
+                     .execute(commandIDs.newDocManager, {
+                        type: "file",
+                        path: defaultFileBrowser.model.path,
+                        ext: ".ampln",
+                     })
+                     .then(async (model) => {
+                        const runtime_type = "LOCAL";
 
-              // Show success notification
-              Notification.success('Environment restarted successfully.', {
-                autoClose: 3000
-              });
-            } catch (error) {
-              console.error("Failed to restart runtime: ", error);
+                        const getPipelineId = () => `pipeline_${+new Date()}`;
 
-              // Dismiss pending notification
-              Notification.dismiss(notificationId);
+                        const pipelineJson = {
+                           doc_type: "Amphi Pipeline",
+                           version: "1",
+                           id: getPipelineId(),
+                           pipelines: [
+                              {
+                                 id: "primary",
+                                 flow: {
+                                    nodes: [],
+                                    edges: [],
+                                    viewport: {
+                                       x: 0,
+                                       y: 0,
+                                       zoom: 1,
+                                    },
+                                 },
+                                 app_data: {
+                                    ui_data: {
+                                       comments: [],
+                                    },
+                                    version: 1,
+                                    runtime_type,
+                                 },
+                                 runtime_ref: "python",
+                              },
+                           ],
+                        };
 
-              // Show error notification
-              Notification.error('Failed to restart environment.', {
-                autoClose: 5000
-              });
+                        // Open Pipeline using Pipeline EditorFactory
+                        const newWidget = await app.commands.execute(commandIDs.openDocManager, {
+                           path: model.path,
+                           factory: PIPELINE_FACTORY, // Use PipelineEditorFactory
+                        });
+
+                        // Assign to the new widget context the pipeline JSON from above
+                        newWidget.context.ready.then(() => {
+                           newWidget.context.model.fromJSON(pipelineJson);
+
+                           // Save this in the file
+                           app.commands.execute(commandIDs.saveDocManager, {
+                              path: model.path,
+                           });
+                        });
+                     });
+               },
+            });
+
+            // Get the current widget and activate unless the args specify otherwise.
+            function getCurrent(args: ReadonlyPartialJSONObject): any | null {
+               const widget = pipelineEditortracker.currentWidget;
+               const activate = args["activate"] !== false;
+
+               if (activate && widget) {
+                  app.shell.activateById(widget.id);
+               }
+
+               return widget ?? null;
             }
-          },
-          isEnabled
-        });
 
-
-        commands.addCommand(CommandIDs.generateCode, {
-          label: 'Generate Code',
-          /**
-           * Args: { json: string } – `json` is the JSON description of the pipeline.
-           * Returns the generated code string.
-           */
-          execute: async args => {
-            const json = args.json as string | undefined;
-            if (!json) {
-              console.error('generateCode requires a "json" argument.');
-              return;
+            function isEnabled(): boolean {
+               return pipelineEditortracker.currentWidget !== null && pipelineEditortracker.currentWidget === app.shell.currentWidget;
             }
-            try {
-              const code = CodeGenerator.generateCode(
-                json,
-                commands,
-                componentService,
-                false
-              );
-              return code; // callers can handle the resulting code as needed
-            } catch (err) {
-              console.error('Failed to generate code:', err);
-            }
-          }
-        });
 
-        /**
-         * Run Pipeline on Kernel linked to the current Editor
-         */
-        // Command Registration
-        commands.addCommand(CommandIDs.runPipeline, {
-          label: 'Run Pipeline',
-          execute: async args => { // Make the execute function async
-            try {
-              // Main Execution Flow
-              if (args.datapanel) {
-                RunService.executeCommand(commands, 'metadatapanel:open');
-              } else {
-                RunService.executeCommand(commands, 'pipeline-console:open');
-              }
+            /**
+             * Restart the Pipeline Kernel linked to the current Editor
+             */
+            commands.addCommand(CommandIDs.restartPipelineKernel, {
+               label: "Restart Runtime…",
+               execute: async (args) => {
+                  const current = getCurrent({ activate: false, ...args });
+                  if (!current) {
+                     return;
+                  }
 
-              const current = getCurrent(args);
-              if (!current) {
-                return;
-              }
+                  // Show pending notification
+                  const notificationId = Notification.emit("Restarting environment...", "in-progress", { autoClose: false });
 
-              if (!RunService.checkSessionAndKernel(Notification, current)) {
-                return;
-              }
+                  try {
+                     await current.context.sessionContext.restartKernel();
 
-              // Install dependencies if needed
-              await current.context.sessionContext.ready; // Await the readiness
+                     // Dismiss pending notification
+                     Notification.dismiss(notificationId);
 
-              const code = args.code.toString();
-              const packages = RunService.extractDependencies(code);
+                     // Show success notification
+                     Notification.success("Environment restarted successfully.", {
+                        autoClose: 3000,
+                     });
+                  } catch (error) {
+                     console.error("Failed to restart runtime: ", error);
 
-              if (packages.length > 0 && packages[0] !== '') {
-                const pips_code = PipelineService.getInstallCommandsFromPackageNames(packages).join('\n');
-                const enableDebugMode = settings.get('enableDebugMode').composite as boolean;
-                if (enableDebugMode) {
-                  console.log('Dependencies to be installed: %o', pips_code);
-                }
+                     // Dismiss pending notification
+                     Notification.dismiss(notificationId);
 
-                await RunService.executeKernelCode(
-                  current.context.sessionContext.session,
-                  pips_code
-                );
-              }
+                     // Show error notification
+                     Notification.error("Failed to restart environment.", {
+                        autoClose: 5000,
+                     });
+                  }
+               },
+               isEnabled,
+            });
 
-              // Run pipeline code
-              const pythonCodeWithSleep = `
+            commands.addCommand(CommandIDs.generateCode, {
+               label: "Generate Code",
+               /**
+                * Args: { json: string } – `json` is the JSON description of the pipeline.
+                * Returns the generated code string.
+                */
+               execute: async (args) => {
+                  const json = args.json as string | undefined;
+                  if (!json) {
+                     console.error('generateCode requires a "json" argument.');
+                     return;
+                  }
+                  try {
+                     const code = CodeGenerator.generateCode(json, commands, componentService, false);
+                     return code; // callers can handle the resulting code as needed
+                  } catch (err) {
+                     console.error("Failed to generate code:", err);
+                  }
+               },
+            });
+
+            /**
+             * Run Pipeline on Kernel linked to the current Editor
+             */
+            // Command Registration
+            commands.addCommand(CommandIDs.runPipeline, {
+               label: "Run Pipeline",
+               execute: async (args) => {
+                  // Make the execute function async
+                  try {
+                     // Main Execution Flow
+                     if (args.datapanel) {
+                        RunService.executeCommand(commands, "metadatapanel:open");
+                     } else {
+                        RunService.executeCommand(commands, "pipeline-console:open");
+                     }
+
+                     const current = getCurrent(args);
+                     if (!current) {
+                        return;
+                     }
+
+                     if (!RunService.checkSessionAndKernel(Notification, current)) {
+                        return;
+                     }
+
+                     // Install dependencies if needed
+                     await current.context.sessionContext.ready; // Await the readiness
+
+                     const code = args.code.toString();
+                     const packages = RunService.extractDependencies(code);
+
+                     if (packages.length > 0 && packages[0] !== "") {
+                        const pips_code = PipelineService.getInstallCommandsFromPackageNames(packages).join("\n");
+                        const enableDebugMode = settings.get("enableDebugMode").composite as boolean;
+                        if (enableDebugMode) {
+                           console.log("Dependencies to be installed: %o", pips_code);
+                        }
+
+                        await RunService.executeKernelCode(current.context.sessionContext.session, pips_code);
+                     }
+
+                     // Run pipeline code
+                     const pythonCodeWithSleep = `
 import time
 time.sleep(0.25)
 ${args.code}
 `;
 
-              const notificationOptions = {
-                pending: { message: 'Running...', options: { autoClose: false } },
-                success: {
-                  message: (result: any) =>
-                    `Pipeline execution successful after ${result.delayInSeconds} seconds.`,
-                  options: {
-                    autoClose: 3000
+                     const notificationOptions = {
+                        pending: { message: "Running...", options: { autoClose: false } },
+                        success: {
+                           message: (result: any) => `Pipeline execution successful after ${result.delayInSeconds} seconds.`,
+                           options: {
+                              autoClose: 3000,
+                           },
+                        },
+                        error: {
+                           message: () => "Pipeline execution failed. Check error messages in the Log Console.",
+                           options: {
+                              actions: [
+                                 {
+                                    label: "Log Console",
+                                    callback: () => {
+                                       RunService.executeCommand(commands, "pipeline-console:open");
+                                    },
+                                 },
+                              ],
+                              autoClose: 5000,
+                           },
+                        },
+                     };
+
+                     await RunService.executeKernelCodeWithNotifications(
+                        Notification,
+                        current.context.sessionContext.session,
+                        pythonCodeWithSleep,
+                        notificationOptions,
+                     );
+                  } catch (error) {
+                     console.error("Error in runPipeline command:", error);
+                     throw error; // Propagate the error to allow .catch() to handle it
                   }
-                },
-                error: {
-                  message: () =>
-                    'Pipeline execution failed. Check error messages in the Log Console.',
-                  options: {
-                    actions: [
-                      {
-                        label: 'Log Console',
-                        callback: () => {
-                          RunService.executeCommand(commands, 'pipeline-console:open');
-                        }
-                      }
-                    ],
-                    autoClose: 5000
+               },
+               isEnabled,
+            });
+
+            commands.addCommand(CommandIDs.runPipelineUntil, {
+               label: "Run pipeline until ...",
+
+               execute: async (args) => {
+                  const current = getCurrent(args);
+                  if (!current) {
+                     throw new Error("No current context available.");
                   }
-                }
-              };
 
-              await RunService.executeKernelCodeWithNotifications(
-                Notification,
-                current.context.sessionContext.session,
-                pythonCodeWithSleep,
-                notificationOptions
-              );
+                  const nodeId = args.nodeId.toString();
+                  const context = args.context;
 
-            } catch (error) {
-              console.error('Error in runPipeline command:', error);
-              throw error; // Propagate the error to allow .catch() to handle it
-            }
-          },
-          isEnabled
-        });
+                  let codeList;
+                  let code;
 
-        commands.addCommand(CommandIDs.runPipelineUntil, {
-          label: 'Run pipeline until ...',
+                  // Only catch code generation errors for the error modal
+                  try {
+                     codeList = CodeGenerator.generateCodeUntil(
+                        current.context.model.toString(),
+                        commands,
+                        componentService,
+                        nodeId,
+                        false,
+                        false,
+                     );
+                     code = codeList.join("\n");
+                  } catch (error) {
+                     console.error(`Code generation failed:`, error);
+                     showErrorModal(error as Error, "Failed to generate code for running pipeline until selected component");
+                     throw error;
+                  }
 
-          execute: async args => {
-            const current = getCurrent(args);
-            if (!current) {
-              throw new Error('No current context available.');
-            }
+                  // Execute the pipeline (runtime errors will be shown via notifications, not error modal)
+                  await commands.execute("pipeline-editor:run-pipeline", { code });
 
-            const nodeId = args.nodeId.toString();
-            const context = args.context;
+                  if (enableTelemetry) {
+                     posthog.capture("run_pipeline", {
+                        pipeline_metadata: current.context.model.toString(),
+                        run_type: "until_node",
+                     });
+                  }
+                  console.log("Pipeline executed successfully");
+               },
+            });
 
-            let codeList;
-            let code;
+            commands.addCommand(CommandIDs.runIncrementalPipelineUntil, {
+               label: "Run incremental pipeline until ...",
 
-            // Only catch code generation errors for the error modal
-            try {
-              codeList = CodeGenerator.generateCodeUntil(
-                current.context.model.toString(),
-                commands,
-                componentService,
-                nodeId,
-                false,
-                false
-              );
-              code = codeList.join('\n');
-            } catch (error) {
-              console.error(`Code generation failed:`, error);
-              showErrorModal(error as Error, 'Failed to generate code for running pipeline until selected component');
-              throw error;
-            }
+               execute: async (args) => {
+                  const current = getCurrent(args);
+                  if (!current) {
+                     return;
+                  }
 
-            // Execute the pipeline (runtime errors will be shown via notifications, not error modal)
-            await commands.execute('pipeline-editor:run-pipeline', { code });
+                  const nodeId = args.nodeId.toString();
+                  const context = args.context;
 
-            if (enableTelemetry) {
-              posthog.capture('run_pipeline', {
-                pipeline_metadata: current.context.model.toString(),
-                run_type: "until_node",
-              })
-            }
-            console.log('Pipeline executed successfully');
-          }
-        });
+                  let incrementalCodeList;
+                  try {
+                     // Generate the incremental list of code to run
+                     incrementalCodeList = CodeGenerator.generateCodeUntil(
+                        current.context.model.toString(),
+                        commands,
+                        componentService,
+                        nodeId,
+                        true,
+                        false,
+                     );
+                  } catch (error) {
+                     console.error("Code generation failed for incremental pipeline execution:", error);
+                     showErrorModal(error as Error, "Failed to generate code for running incremental pipeline until selected component");
+                     return;
+                  }
 
-        commands.addCommand(CommandIDs.runIncrementalPipelineUntil, {
-          label: 'Run incremental pipeline until ...',
+                  // Notification options
+                  const notificationOptions = {
+                     pending: { message: "Running incremental code...", options: { autoClose: false } },
+                     success: { message: "Code block executed successfully.", options: { autoClose: 3000 } },
+                     error: {
+                        message: () => "Execution failed. Stopping pipeline.",
+                        options: {
+                           actions: [
+                              {
+                                 label: "Log Console",
+                                 callback: () => RunService.executeCommand(commands, "pipeline-console:open"),
+                              },
+                           ],
+                           autoClose: 5000,
+                        },
+                     },
+                  };
 
-          execute: async args => {
+                  // Iterate over each incremental code block and execute
+                  for (const codeBlock of incrementalCodeList) {
+                     const code = codeBlock.code;
 
-            const current = getCurrent(args);
-            if (!current) {
-              return;
-            }
-
-            const nodeId = args.nodeId.toString();
-            const context = args.context;
-
-            let incrementalCodeList;
-            try {
-              // Generate the incremental list of code to run
-              incrementalCodeList = CodeGenerator.generateCodeUntil(
-                current.context.model.toString(),
-                commands,
-                componentService,
-                nodeId,
-                true,
-                false
-              );
-            } catch (error) {
-              console.error('Code generation failed for incremental pipeline execution:', error);
-              showErrorModal(error as Error, 'Failed to generate code for running incremental pipeline until selected component');
-              return;
-            }
-
-            // Notification options
-            const notificationOptions = {
-              pending: { message: 'Running incremental code...', options: { autoClose: false } },
-              success: { message: 'Code block executed successfully.', options: { autoClose: 3000 } },
-              error: {
-                message: () => 'Execution failed. Stopping pipeline.',
-                options: {
-                  actions: [{
-                    label: 'Log Console',
-                    callback: () => RunService.executeCommand(commands, 'pipeline-console:open')
-                  }],
-                  autoClose: 5000
-                }
-              }
-            };
-
-            // Iterate over each incremental code block and execute
-            for (const codeBlock of incrementalCodeList) {
-              const code = codeBlock.code;
-
-              const pythonCodeWithSleep = `
+                     const pythonCodeWithSleep = `
 import time
 time.sleep(0.25)
 ${code}
 `;
-              try {
-                await RunService.executeKernelCodeWithNotifications(
-                  Notification,
-                  current.context.sessionContext.session,
-                  pythonCodeWithSleep,
-                  notificationOptions
-                );
-                const nodeId = codeBlock.nodeId;
-              } catch (error) {
-                console.error(`Execution failed for code block: ${pythonCodeWithSleep}`, error);
-                // Stop execution if a block fails
-                break;
-              }
-            }
-          }
-        });
-
-        commands.addCommand(CommandIDs.runIncrementalPipeline, {
-          label: 'Run Incremental Pipeline',
-          execute: async args => {
-            const current = getCurrent(args);
-            if (!current) {
-              return;
-            }
-
-            // Clear all execution badges before starting
-            executionService.clearAllExecutionData();
-
-            // Open console to show progress
-            RunService.executeCommand(commands, 'pipeline-console:open');
-
-            // Get all nodes in the pipeline
-            const flow = PipelineService.filterPipeline(current.context.model.toString());
-            const { nodesToTraverse } = CodeGenerator.computeNodesToTraverse(
-              flow,
-              'none', // 'none' means all nodes
-              componentService
-            );
-
-            // Track total components and current progress
-            const totalComponents = nodesToTraverse.length;
-            let currentComponent = 0;
-            let executionFailed = false;
-
-            // Iterate over each node and execute it
-            for (const nodeId of nodesToTraverse) {
-              currentComponent++;
-
-              console.log(`[${currentComponent}/${totalComponents}] Executing component: ${nodeId}`);
-
-              // Report that execution is starting
-              executionService.reportExecution({
-                nodeId,
-                status: 'running',
-                timestamp: Date.now(),
-                metadata: {}
-              });
-
-              let code;
-              try {
-                // Generate code up to this node (like runPipelineUntil does)
-                const codeList = CodeGenerator.generateCodeUntil(
-                  current.context.model.toString(),
-                  commands,
-                  componentService,
-                  nodeId,
-                  false,
-                  false
-                );
-                code = codeList.join('\n');
-              } catch (error) {
-                console.error(`[${currentComponent}/${totalComponents}] Code generation failed for component ${nodeId}:`, error);
-
-                const errorMessage = (error as Error).message || String(error) || 'Code generation failed';
-
-                // Report failure
-                executionService.reportExecution({
-                  nodeId,
-                  status: 'failed',
-                  timestamp: Date.now(),
-                  metadata: {
-                    errorMessage,
-                    errorType: 'CodeGenerationError'
+                     try {
+                        await RunService.executeKernelCodeWithNotifications(
+                           Notification,
+                           current.context.sessionContext.session,
+                           pythonCodeWithSleep,
+                           notificationOptions,
+                        );
+                        const nodeId = codeBlock.nodeId;
+                     } catch (error) {
+                        console.error(`Execution failed for code block: ${pythonCodeWithSleep}`, error);
+                        // Stop execution if a block fails
+                        break;
+                     }
                   }
-                });
-
-                showErrorModal(error as Error, `Failed to generate code for component ${currentComponent}/${totalComponents}`);
-                executionFailed = true;
-                break;
-              }
-
-              const startTime = Date.now();
-              try {
-                // Execute the component using the same mechanism as runPipeline
-                await commands.execute('pipeline-editor:run-pipeline', { code, datapanel: false });
-
-                const executionTime = (Date.now() - startTime) / 1000;
-                console.log(`[${currentComponent}/${totalComponents}] Component ${nodeId} executed successfully in ${executionTime.toFixed(2)}s`);
-
-                // Report success with execution time
-                executionService.reportExecution({
-                  nodeId,
-                  status: 'success',
-                  timestamp: Date.now(),
-                  metadata: {
-                    executionTime
-                  }
-                });
-              } catch (error) {
-                const executionTime = (Date.now() - startTime) / 1000;
-                console.error(`[${currentComponent}/${totalComponents}] Execution failed for component ${nodeId}:`, error);
-
-                const errorMessage = (error as Error).message || String(error) || 'Execution failed';
-
-                // Report failure
-                executionService.reportExecution({
-                  nodeId,
-                  status: 'failed',
-                  timestamp: Date.now(),
-                  metadata: {
-                    errorMessage,
-                    errorType: 'ExecutionError',
-                    executionTime
-                  }
-                });
-
-                Notification.error(`Pipeline stopped at component ${currentComponent}/${totalComponents}`, {
-                  actions: [{
-                    label: 'View Console',
-                    callback: () => RunService.executeCommand(commands, 'pipeline-console:open')
-                  }],
-                  autoClose: 8000
-                });
-                executionFailed = true;
-                break;
-              }
-            }
-
-            // Show completion notification if all components executed successfully
-            if (!executionFailed && currentComponent === totalComponents) {
-              Notification.success(`Pipeline completed: ${totalComponents} components executed successfully`, {
-                autoClose: 5000
-              });
-            }
-
-            // Anonymous telemetry
-            if (enableTelemetry) {
-              posthog.capture('run_pipeline', {
-                pipeline_metadata: current.context.model.toString(),
-                run_type: "incremental_full",
-                total_components: totalComponents,
-                executed_components: currentComponent,
-                success: !executionFailed
-              });
-            }
-          },
-          isEnabled
-        });
-
-        commands.addCommand('pipeline-editor:version', {
-          label: 'About Amphi',
-          execute: () => {
-            const { title, body } = createAboutDialog(LIB_VERSION);
-
-            return showDialog({
-              title,
-              body,
-              buttons: [
-                Dialog.createButton({
-                  label: 'Close',
-                  className: 'jp-About-button jp-mod-reject jp-mod-styled',
-                }),
-              ],
+               },
             });
-          },
-        });
 
-        // Add the command to the context menu
-        app.contextMenu.addItem({
-          command: CommandIDs.create,
-          selector: '.jp-DirListing-content',
-          rank: 100,
-        });
+            commands.addCommand(CommandIDs.runIncrementalPipeline, {
+               label: "Run Incremental Pipeline",
+               execute: async (args) => {
+                  const current = getCurrent(args);
+                  if (!current) {
+                     return;
+                  }
 
-        // Add to palette
-        palette.addItem({
-          command: CommandIDs.create,
-          category: 'Pipeline',
-          args: { isPalette: true }
-        });
+                  // Clear all execution badges before starting
+                  executionService.clearAllExecutionData();
 
-        palette.addItem({
-          command: 'pipeline-editor:version',
-          category: 'Help',
-          args: { isPalette: true }
-        });
+                  // Open console to show progress
+                  RunService.executeCommand(commands, "pipeline-console:open");
 
-        palette.addItem({
-          command: CommandIDs.generateCode,
-          category: 'Pipeline',
-          args: { isPalette: true }
-        });
+                  // Get all nodes in the pipeline
+                  const flow = PipelineService.filterPipeline(current.context.model.toString());
+                  const { nodesToTraverse } = CodeGenerator.computeNodesToTraverse(
+                     flow,
+                     "none", // 'none' means all nodes
+                     componentService,
+                  );
 
-        // Components //
-        // ----
-        // ----
-        // Copy Paste
-        //const { cut, copy, paste, bufferedNodes } = useCopyPaste();
-        // const canCopy = nodes.some(({ selected }) => selected);
-        // const canPaste = bufferedNodes.length > 0;
+                  // Track total components and current progress
+                  const totalComponents = nodesToTraverse.length;
+                  let currentComponent = 0;
+                  let executionFailed = false;
 
-        commands.addCommand('pipeline-editor-component:save-as-file', {
-          execute: async args => {
-            const current = getCurrent(args);
-            if (!current) {
-              return;
-            }
+                  // Iterate over each node and execute it
+                  for (const nodeId of nodesToTraverse) {
+                     currentComponent++;
 
-            const contextNode: HTMLElement | undefined = app.contextMenuHitTest(
-              node => !!node.dataset.id
-            );
+                     console.log(`[${currentComponent}/${totalComponents}] Executing component: ${nodeId}`);
 
-            if (contextNode) {
-              const nodeId = contextNode.dataset.id; // Extract the node ID
+                     // Report that execution is starting
+                     executionService.reportExecution({
+                        nodeId,
+                        status: "running",
+                        timestamp: Date.now(),
+                        metadata: {},
+                     });
 
-              // Assuming PipelineService.getNodeById is available
-              const nodeJson = PipelineService.getNodeById(current.context.model.toString(), nodeId);
+                     let code;
+                     try {
+                        // Generate code up to this node (like runPipelineUntil does)
+                        const codeList = CodeGenerator.generateCodeUntil(
+                           current.context.model.toString(),
+                           commands,
+                           componentService,
+                           nodeId,
+                           false,
+                           false,
+                        );
+                        code = codeList.join("\n");
+                     } catch (error) {
+                        console.error(`[${currentComponent}/${totalComponents}] Code generation failed for component ${nodeId}:`, error);
 
-              // Extract data and type attributes
-              const { data, type } = nodeJson;
-              const { lastUpdated, lastExecuted, ...filteredData } = data;
-              const componentJson = JSON.stringify({ component: { data: filteredData, type } });
-              const file = await commands.execute('docmanager:new-untitled', { path: '/', type: 'file', ext: '.amcpn' });
-              const doc = await commands.execute('docmanager:open', { path: file.path });
+                        const errorMessage = (error as Error).message || String(error) || "Code generation failed";
 
-              // Ensure the document context model is loaded
-              await doc.context.ready;
+                        // Report failure
+                        executionService.reportExecution({
+                           nodeId,
+                           status: "failed",
+                           timestamp: Date.now(),
+                           metadata: {
+                              errorMessage,
+                              errorType: "CodeGenerationError",
+                           },
+                        });
 
-              // Save componentJson string to the file
-              doc.context.model.fromString(componentJson);
-              await doc.context.save();
-              await commands.execute('docmanager:reload', { path: file.path });
-              await commands.execute('docmanager:rename');
-              // await commands.execute('docmanager:save', { path: file.path });
-            }
-          },
-          label: 'Save component'
-        });
+                        showErrorModal(error as Error, `Failed to generate code for component ${currentComponent}/${totalComponents}`);
+                        executionFailed = true;
+                        break;
+                     }
 
-        commands.addCommand('pipeline-editor-component:view-data', {
-          execute: async args => {
-            const current = getCurrent(args);
-            if (!current) {
-              return;
-            }
+                     const startTime = Date.now();
+                     try {
+                        // Execute the component using the same mechanism as runPipeline
+                        await commands.execute("pipeline-editor:run-pipeline", { code, datapanel: false });
 
-            const contextNode: HTMLElement | undefined = app.contextMenuHitTest(
-              node => !!node.dataset.id
-            );
+                        const executionTime = (Date.now() - startTime) / 1000;
+                        console.log(
+                           `[${currentComponent}/${totalComponents}] Component ${nodeId} executed successfully in ${executionTime.toFixed(2)}s`,
+                        );
 
-            if (contextNode) {
-              const nodeId = contextNode.dataset.id; // Extract the node ID
-              await viewData(nodeId, current.context, commands, app);
-            }
+                        // Report success with execution time
+                        executionService.reportExecution({
+                           nodeId,
+                           status: "success",
+                           timestamp: Date.now(),
+                           metadata: {
+                              executionTime,
+                           },
+                        });
+                     } catch (error) {
+                        const executionTime = (Date.now() - startTime) / 1000;
+                        console.error(`[${currentComponent}/${totalComponents}] Execution failed for component ${nodeId}:`, error);
 
-            if (current.nodeId) {
-              await viewData(current.nodeId, current.context, commands, app);
-            }
-          },
-          label: 'Browse Data'
-        });
+                        const errorMessage = (error as Error).message || String(error) || "Execution failed";
 
-        commands.addCommand('pipeline-editor-component:override', {
-          execute: async args => {
+                        // Report failure
+                        executionService.reportExecution({
+                           nodeId,
+                           status: "failed",
+                           timestamp: Date.now(),
+                           metadata: {
+                              errorMessage,
+                              errorType: "ExecutionError",
+                              executionTime,
+                           },
+                        });
 
-            const contextNode: HTMLElement | undefined = app.contextMenuHitTest(
-              node => !!node.dataset.id
+                        Notification.error(`Pipeline stopped at component ${currentComponent}/${totalComponents}`, {
+                           actions: [
+                              {
+                                 label: "View Console",
+                                 callback: () => RunService.executeCommand(commands, "pipeline-console:open"),
+                              },
+                           ],
+                           autoClose: 8000,
+                        });
+                        executionFailed = true;
+                        break;
+                     }
+                  }
 
-            );
+                  // Show completion notification if all components executed successfully
+                  if (!executionFailed && currentComponent === totalComponents) {
+                     Notification.success(`Pipeline completed: ${totalComponents} components executed successfully`, {
+                        autoClose: 5000,
+                     });
+                  }
 
-            console.log("contextNode: %o", contextNode)
-            /*
+                  // Anonymous telemetry
+                  if (enableTelemetry) {
+                     posthog.capture("run_pipeline", {
+                        pipeline_metadata: current.context.model.toString(),
+                        run_type: "incremental_full",
+                        total_components: totalComponents,
+                        executed_components: currentComponent,
+                        success: !executionFailed,
+                     });
+                  }
+               },
+               isEnabled,
+            });
+
+            commands.addCommand("pipeline-editor:version", {
+               label: "About Amphi",
+               execute: () => {
+                  const { title, body } = createAboutDialog(LIB_VERSION);
+
+                  return showDialog({
+                     title,
+                     body,
+                     buttons: [
+                        Dialog.createButton({
+                           label: "Close",
+                           className: "jp-About-button jp-mod-reject jp-mod-styled",
+                        }),
+                     ],
+                  });
+               },
+            });
+
+            // Add the command to the context menu
+            app.contextMenu.addItem({
+               command: CommandIDs.create,
+               selector: ".jp-DirListing-content",
+               rank: 100,
+            });
+
+            // Add to palette
+            palette.addItem({
+               command: CommandIDs.create,
+               category: "Pipeline",
+               args: { isPalette: true },
+            });
+
+            palette.addItem({
+               command: "pipeline-editor:version",
+               category: "Help",
+               args: { isPalette: true },
+            });
+
+            palette.addItem({
+               command: CommandIDs.generateCode,
+               category: "Pipeline",
+               args: { isPalette: true },
+            });
+
+            // Components //
+            // ----
+            // ----
+            // Copy Paste
+            //const { cut, copy, paste, bufferedNodes } = useCopyPaste();
+            // const canCopy = nodes.some(({ selected }) => selected);
+            // const canPaste = bufferedNodes.length > 0;
+
+            commands.addCommand("pipeline-editor-component:save-as-file", {
+               execute: async (args) => {
+                  const current = getCurrent(args);
+                  if (!current) {
+                     return;
+                  }
+
+                  const contextNode: HTMLElement | undefined = app.contextMenuHitTest((node) => !!node.dataset.id);
+
+                  if (contextNode) {
+                     const nodeId = contextNode.dataset.id; // Extract the node ID
+
+                     // Assuming PipelineService.getNodeById is available
+                     const nodeJson = PipelineService.getNodeById(current.context.model.toString(), nodeId);
+
+                     // Extract data and type attributes
+                     const { data, type } = nodeJson;
+                     const { lastUpdated, lastExecuted, ...filteredData } = data;
+                     const componentJson = JSON.stringify({ component: { data: filteredData, type } });
+                     const file = await commands.execute("docmanager:new-untitled", { path: "/", type: "file", ext: ".amcpn" });
+                     const doc = await commands.execute("docmanager:open", { path: file.path });
+
+                     // Ensure the document context model is loaded
+                     await doc.context.ready;
+
+                     // Save componentJson string to the file
+                     doc.context.model.fromString(componentJson);
+                     await doc.context.save();
+                     await commands.execute("docmanager:reload", { path: file.path });
+                     await commands.execute("docmanager:rename");
+                     // await commands.execute('docmanager:save', { path: file.path });
+                  }
+               },
+               label: "Save component",
+            });
+
+            commands.addCommand("pipeline-editor-component:view-data", {
+               execute: async (args) => {
+                  const current = getCurrent(args);
+                  if (!current) {
+                     return;
+                  }
+
+                  const contextNode: HTMLElement | undefined = app.contextMenuHitTest((node) => !!node.dataset.id);
+
+                  if (contextNode) {
+                     const nodeId = contextNode.dataset.id; // Extract the node ID
+                     await viewData(nodeId, current.context, commands, app);
+                  }
+
+                  if (current.nodeId) {
+                     await viewData(current.nodeId, current.context, commands, app);
+                  }
+               },
+               label: "Browse Data",
+            });
+
+            commands.addCommand("pipeline-editor-component:override", {
+               execute: async (args) => {
+                  const contextNode: HTMLElement | undefined = app.contextMenuHitTest((node) => !!node.dataset.id);
+
+                  console.log("contextNode: %o", contextNode);
+                  /*
             if (contextNode) {
               const nodeId = contextNode.dataset.id; // Extract the node ID
               const codeList = CodeGenerator.generateCodeUntil(
@@ -901,146 +879,125 @@ ${code}
                   
             }
             */
-          },
-          label: 'Override Code'
-        });
+               },
+               label: "Override Code",
+            });
 
-        commands.addCommand('pipeline-editor-component:generate-ibis-code', {
-          execute: async args => {
-            const current = getCurrent(args);
-            if (!current) {
-              return;
-            }
+            commands.addCommand("pipeline-editor-component:generate-ibis-code", {
+               execute: async (args) => {
+                  const current = getCurrent(args);
+                  if (!current) {
+                     return;
+                  }
 
-            const contextNode: HTMLElement | undefined = app.contextMenuHitTest(
-              node => !!node.dataset.id
-            );
+                  const contextNode: HTMLElement | undefined = app.contextMenuHitTest((node) => !!node.dataset.id);
 
-            if (contextNode) {
-              const nodeId = contextNode.dataset.id; // Extract the node ID
+                  if (contextNode) {
+                     const nodeId = contextNode.dataset.id; // Extract the node ID
 
-              commands.execute('pipeline-editor:run-pipeline-until', { nodeId: nodeId, context: current.context }).then(result => {
+                     commands
+                        .execute("pipeline-editor:run-pipeline-until", { nodeId: nodeId, context: current.context })
+                        .then((result) => {
+                           const flow = PipelineService.filterPipeline(current.context.model.toString());
 
-                const flow = PipelineService.filterPipeline(current.context.model.toString());
+                           const { nodesToTraverse, nodesMap } = CodeGenerator.computeNodesToTraverse(flow, nodeId, componentService);
 
-                const { nodesToTraverse, nodesMap } = CodeGenerator.computeNodesToTraverse(
-                  flow,
-                  nodeId,
-                  componentService
-                );
+                           if (!nodesMap.has(nodeId)) {
+                              console.error(`Node with ID ${nodeId} not found in nodesMap`);
+                           } else {
+                              const targetNode = nodesMap[nodeId];
+                              // const namedId = targetNode.data.namedId;
+                           }
 
-                if (!nodesMap.has(nodeId)) {
-                  console.error(`Node with ID ${nodeId} not found in nodesMap`);
-                } else {
-                  const targetNode = nodesMap[nodeId];
-                  // const namedId = targetNode.data.namedId;
-                }
-
-
-                /*
+                           /*
                 RunService.executeKernelCode(
                   current.context.sessionContext.session,
                   `print(sql_code := ${namedId}.compile())`
                 );
                 */
+                        })
+                        .catch((reason) => {
+                           console.error(`Error with pipeline, nodes not updated.'.\n${reason}`);
+                        });
+                  }
+               },
+               label: "Generate SQL code",
+            });
 
-              })
-                .catch(reason => {
+            const contextMenuItems = [
+               {
+                  command: "pipeline-editor-component:save-as-file",
+                  selector: ".component",
+                  rank: 3,
+               },
+               {
+                  command: "pipeline-editor-component:view-data",
+                  selector: ".component",
+                  rank: 4,
+               },
+               {
+                  command: "pipeline-editor-component:generate-ibis-code",
+                  selector: ".ibis",
+                  rank: 7,
+               },
+            ];
 
-                  console.error(
-                    `Error with pipeline, nodes not updated.'.\n${reason}`
-                  );
-                });
+            // Add each context menu item with the args function
+            contextMenuItems.forEach((item) => {
+               app.contextMenu.addItem({
+                  command: item.command,
+                  selector: item.selector,
+                  rank: item.rank,
+               });
+            });
+
+            // ----
+            // ----
+
+            // Add launcher
+            if (launcher) {
+               launcher.add({
+                  command: CommandIDs.create,
+                  category: "Amphi",
+                  rank: 3,
+               });
             }
+         })
+         .catch((reason) => {
+            console.error(`Something went wrong when reading the settings.\n${reason}`);
+         });
 
+      // Handle state restoration.
+      if (restorer) {
+         // When restoring the app, if the document was open, reopen it
+         restorer.restore(pipelineEditortracker, {
+            command: "docmanager:open",
+            args: (widget) => ({ path: widget.context.path, factory: PIPELINE_FACTORY }),
+            name: (widget) => widget.context.path,
+         });
+      }
 
-          },
-          label: 'Generate SQL code'
-        });
-
-        const contextMenuItems = [
-          {
-            command: 'pipeline-editor-component:save-as-file',
-            selector: '.component',
-            rank: 3
-          },
-          {
-            command: 'pipeline-editor-component:view-data',
-            selector: '.component',
-            rank: 4
-          },
-          {
-            command: 'pipeline-editor-component:generate-ibis-code',
-            selector: '.ibis',
-            rank: 7
-          }
-        ];
-
-        // Add each context menu item with the args function
-        contextMenuItems.forEach(item => {
-          app.contextMenu.addItem({
-            command: item.command,
-            selector: item.selector,
-            rank: item.rank
-          });
-        });
-
-        // ----
-        // ----
-
-
-        // Add launcher
-        if (launcher) {
-          launcher.add({
-            command: CommandIDs.create,
-            category: 'Amphi',
-            rank: 3
-          });
-        }
-
-      })
-      .catch(reason => {
-        console.error(
-          `Something went wrong when reading the settings.\n${reason}`
-        );
-      });
-
-    // Handle state restoration.
-    if (restorer) {
-      // When restoring the app, if the document was open, reopen it
-      restorer.restore(pipelineEditortracker, {
-        command: 'docmanager:open',
-        args: widget => ({ path: widget.context.path, factory: PIPELINE_FACTORY }),
-        name: widget => widget.context.path
-      });
-    }
-
-    return pipelineEditortracker;
-
-
-  },
+      return pipelineEditortracker;
+   },
 };
 
 /**
  * Plugin that provides the execution service for tracking component execution status
  */
 const executionServicePlugin: JupyterFrontEndPlugin<IPipelineExecutionService> = {
-  id: '@amphi/pipeline-editor:execution-service',
-  autoStart: true,
-  provides: IPipelineExecutionToken,
-  activate: (app: JupyterFrontEnd) => {
-    console.log('Pipeline Execution Service activated');
-    const executionService = new PipelineExecutionService();
-    return executionService;
-  }
+   id: "@amphi/pipeline-editor:execution-service",
+   autoStart: true,
+   provides: IPipelineExecutionToken,
+   activate: (app: JupyterFrontEnd) => {
+      console.log("Pipeline Execution Service activated");
+      const executionService = new PipelineExecutionService();
+      return executionService;
+   },
 };
 
 /**
  * Export the plugins as default.
  */
-const extensions: JupyterFrontEndPlugin<any>[] = [
-  pipelineEditor,
-  executionServicePlugin
-];
+const extensions: JupyterFrontEndPlugin<any>[] = [pipelineEditor, executionServicePlugin];
 
 export default extensions;

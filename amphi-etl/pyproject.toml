@@ -2,8 +2,6 @@
 requires = ["hatchling>=1.9.0", "jupyterlab>=4.0.0,<5", "hatch-nodejs-version>=0.3.2"]
 build-backend = "hatchling.build"
 
-[tool.hatch.version]
-path = "amphi/_version.py"
 
 [project]
 name = "amphi-etl"
@@ -21,7 +19,8 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 
-dynamic = ["version", "authors", "keywords", "scripts", "dependencies"]
+version = "0.9.5"
+dynamic = ["authors", "keywords", "scripts", "dependencies"]
 
 [project.urls]
 Documentation = "https://docs.amphi.ai"
@@ -52,9 +51,6 @@ amphi = "share/jupyter/labextensions/@amphi"
 "config/settings" = "share/jupyter/lab/settings"
 "config/server-config" = "etc/jupyter/jupyter_server_config.d"
 
-
-[tool.hatch.build.hooks.version]
-path = "amphi/_version.py"
 
 [tool.hatch.build.hooks.jupyter-builder]
 dependencies = ["hatch-jupyter-builder>=0.5"]

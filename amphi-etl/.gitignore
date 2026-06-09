@@ -64,3 +64,5 @@ testing*
 
 # Environment variables
 .env
+
+amphi/_version.py

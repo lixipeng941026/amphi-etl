@@ -28,3 +28,22 @@ Remove-Item -Recurse -Force node_modules, yarn.lock, packages\*\node_modules, pa
 5.jupyter lab  //启动 Jupyter Lab
 
 ```
+
+### 虚拟环境启动方法
+
+```
+
+1.cd D:\Code\Etl
+  .\amphi_venv\Scripts\Activate.ps1
+2.jlpm install
+3.jlpm build
+4.python -m pip install .
+5.cd D:\Code\Etl\amphi-etl
+python -c "from amphi.main import main; main()" start -w D:\Code\Etl\workspace
+
+
+
+一键启动
+cd D:\Code\Etl
+.\start.ps1
+```
