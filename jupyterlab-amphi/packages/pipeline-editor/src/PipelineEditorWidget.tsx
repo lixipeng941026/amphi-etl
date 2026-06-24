@@ -47,6 +47,8 @@ import { DownOutlined, LoadingOutlined } from "@ant-design/icons";
 
 import { CodeGenerator, CodeGeneratorDagster, PipelineService } from "@amphi/pipeline-components-manager";
 import ReactDOM from "react-dom";
+// @ts-ignore
+
 import "reactflow/dist/style.css";
 import CustomEdge from "./customEdge";
 import { Dropzone } from "./Dropzone";

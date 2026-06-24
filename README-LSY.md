@@ -33,12 +33,16 @@ Remove-Item -Recurse -Force node_modules, yarn.lock, packages\*\node_modules, pa
 
 ```
 
-1.cd D:\Code\Etl
+cd D:\Code\Etl
   .\amphi_venv\Scripts\Activate.ps1
-2.jlpm install
-3.jlpm build
-4.python -m pip install .
-5.cd D:\Code\Etl\amphi-etl
+
+jlpm install
+
+jlpm build
+
+python -m pip install .
+
+cd D:\Code\Etl\amphi-etl
 python -c "from amphi.main import main; main()" start -w D:\Code\Etl\workspace
 
 

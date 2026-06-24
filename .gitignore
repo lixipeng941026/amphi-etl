@@ -27,7 +27,7 @@ node_modules/
 dist/
 build/
 *.egg-info/
-
+deploy/
 # Amphi 自动生成的版本文件（之前出过问题）
 amphi/_version.py
 

@@ -1,0 +1,5 @@
+amphi_venv/
+node_modules/
+.git/
+.ipynb_checkpoints/
+*.log
