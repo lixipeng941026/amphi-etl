@@ -1,260 +1,265 @@
-import { JupyterFrontEnd, JupyterFrontEndPlugin } from "@jupyterlab/application";
+import {
+  JupyterFrontEnd,
+  JupyterFrontEndPlugin,
+} from "@jupyterlab/application";
 
 import { ComponentManager } from "@amphi/pipeline-components-manager";
 import { BaseCoreComponent } from "./components/BaseCoreComponent";
 
 // Import allow to add the component to the palette
 import {
-   Aggregate,
-   Console,
-   ExcelFileOutput,
-   CsvFileInput,
-   JsonFileInput,
-   JsonFileOutput,
-   ExcelFileInput,
-   CsvFileOutput,
-   // CustomTransformations,
-   Filter,
-   RestInput,
-   SplitColumn,
-   Deduplicate,
-   ExpandList,
-   Sample,
-   Sort,
-   RenameColumns,
-   TypeConverter,
-   Extract,
-   GoogleSheetsInput,
-   GoogleSheetsOutput,
-   FilterColumns,
-   Join,
-   CombinedJoin,
-   ParquetFileInput,
-   ParquetFileOutput,
-   PostgresInput,
-   PostgresOutput,
-   MySQLInput,
-   MySQLOutput,
-   XmlFileInput,
-   XmlFileOutput,
-   DateTimeConverter,
-   EnvVariables,
-   EnvFile,
-   Transpose,
-   Unite,
-   Pivot,
-   Annotation,
-   ODBCInput,
-   PdfTablesInput,
-   Summary,
-   LocalFileInput,
-   FlattenJSON,
-   DataCleansing,
-   GenerateIDColumn,
-   SqlServerInput,
-   OracleInput,
-   Connection,
-   SnowflakeInput,
-   // FormulaRow,
-   InlineInput,
-   S3FileOutput,
-   S3FileInput,
-   SnowflakeOutput,
-   SqlServerOutput,
-   OracleOutput,
-   // CustomInput,
-   CustomOutput,
-   FileUtils,
-   FrequencyAnalysis,
-   FormExample,
-   UniqueKeyDetector,
-   FileAction,
-   DataframeList,
-   DataframeDelete,
-   // HierarchyPath,
-   PackagesList,
-   JSONTools,
-   DatabaseInput,
-   DatabaseOutput,
-   CompareDataframes,
-   GenerateCalendar,
-   DynamicGenerateCalendar,
-   HelloDate,
+  Aggregate,
+  Console,
+  ExcelFileOutput,
+  CsvFileInput,
+  JsonFileInput,
+  JsonFileOutput,
+  ExcelFileInput,
+  CsvFileOutput,
+  // CustomTransformations,
+  Filter,
+  RestInput,
+  SplitColumn,
+  Deduplicate,
+  ExpandList,
+  Sample,
+  Sort,
+  RenameColumns,
+  TypeConverter,
+  Extract,
+  GoogleSheetsInput,
+  GoogleSheetsOutput,
+  FilterColumns,
+  Join,
+  CombinedJoin,
+  ParquetFileInput,
+  ParquetFileOutput,
+  PostgresInput,
+  PostgresOutput,
+  MySQLInput,
+  MySQLOutput,
+  XmlFileInput,
+  XmlFileOutput,
+  DateTimeConverter,
+  EnvVariables,
+  EnvFile,
+  Transpose,
+  Unite,
+  Pivot,
+  Annotation,
+  ODBCInput,
+  PdfTablesInput,
+  Summary,
+  LocalFileInput,
+  FlattenJSON,
+  DataCleansing,
+  GenerateIDColumn,
+  SqlServerInput,
+  OracleInput,
+  Connection,
+  SnowflakeInput,
+  // FormulaRow,
+  InlineInput,
+  S3FileOutput,
+  S3FileInput,
+  SnowflakeOutput,
+  SqlServerOutput,
+  OracleOutput,
+  // CustomInput,
+  CustomOutput,
+  FileUtils,
+  FrequencyAnalysis,
+  FormExample,
+  UniqueKeyDetector,
+  FileAction,
+  DataframeList,
+  DataframeDelete,
+  // HierarchyPath,
+  PackagesList,
+  JSONTools,
+  DatabaseInput,
+  DatabaseOutput,
+  CompareDataframes,
+  GenerateCalendar,
+  DynamicGenerateCalendar,
+  HelloDate,
+  CustomFilter,
 } from "./components";
 
 // Export allow the component to be used as a base component in different packages
 export {
-   Aggregate,
-   Console,
-   ExcelFileOutput,
-   CsvFileInput,
-   JsonFileInput,
-   JsonFileOutput,
-   ExcelFileInput,
-   CsvFileOutput,
-   // CustomTransformations,
-   Filter,
-   RestInput,
-   SplitColumn,
-   Deduplicate,
-   ExpandList,
-   Sample,
-   Sort,
-   RenameColumns,
-   TypeConverter,
-   Extract,
-   GoogleSheetsInput,
-   GoogleSheetsOutput,
-   FilterColumns,
-   Join,
-   CombinedJoin,
-   ParquetFileInput,
-   ParquetFileOutput,
-   PostgresInput,
-   PostgresOutput,
-   MySQLInput,
-   MySQLOutput,
-   XmlFileInput,
-   XmlFileOutput,
-   DateTimeConverter,
-   EnvVariables,
-   EnvFile,
-   Transpose,
-   Unite,
-   Pivot,
-   Annotation,
-   ODBCInput,
-   PdfTablesInput,
-   Summary,
-   LocalFileInput,
-   FlattenJSON,
-   DataCleansing,
-   GenerateIDColumn,
-   SqlServerInput,
-   OracleInput,
-   Connection,
-   SnowflakeInput,
-   // FormulaRow,
-   InlineInput,
-   S3FileOutput,
-   S3FileInput,
-   SnowflakeOutput,
-   SqlServerOutput,
-   OracleOutput,
-   // CustomInput,
-   CustomOutput,
-   FileUtils,
-   FrequencyAnalysis,
-   FormExample,
-   UniqueKeyDetector,
-   FileAction,
-   DataframeList,
-   DataframeDelete,
-   // HierarchyPath,
-   PackagesList,
-   CompareDataframes,
-   GenerateCalendar,
-   DynamicGenerateCalendar,
-   HelloDate,
+  Aggregate,
+  Console,
+  ExcelFileOutput,
+  CsvFileInput,
+  JsonFileInput,
+  JsonFileOutput,
+  ExcelFileInput,
+  CsvFileOutput,
+  // CustomTransformations,
+  Filter,
+  RestInput,
+  SplitColumn,
+  Deduplicate,
+  ExpandList,
+  Sample,
+  Sort,
+  RenameColumns,
+  TypeConverter,
+  Extract,
+  GoogleSheetsInput,
+  GoogleSheetsOutput,
+  FilterColumns,
+  Join,
+  CombinedJoin,
+  ParquetFileInput,
+  ParquetFileOutput,
+  PostgresInput,
+  PostgresOutput,
+  MySQLInput,
+  MySQLOutput,
+  XmlFileInput,
+  XmlFileOutput,
+  DateTimeConverter,
+  EnvVariables,
+  EnvFile,
+  Transpose,
+  Unite,
+  Pivot,
+  Annotation,
+  ODBCInput,
+  PdfTablesInput,
+  Summary,
+  LocalFileInput,
+  FlattenJSON,
+  DataCleansing,
+  GenerateIDColumn,
+  SqlServerInput,
+  OracleInput,
+  Connection,
+  SnowflakeInput,
+  // FormulaRow,
+  InlineInput,
+  S3FileOutput,
+  S3FileInput,
+  SnowflakeOutput,
+  SqlServerOutput,
+  OracleOutput,
+  // CustomInput,
+  CustomOutput,
+  FileUtils,
+  FrequencyAnalysis,
+  FormExample,
+  UniqueKeyDetector,
+  FileAction,
+  DataframeList,
+  DataframeDelete,
+  // HierarchyPath,
+  PackagesList,
+  CompareDataframes,
+  GenerateCalendar,
+  DynamicGenerateCalendar,
+  HelloDate,
 };
 
 const plugin: JupyterFrontEndPlugin<void> = {
-   id: "@amphi/pipeline-components-core",
-   description: "Add components to Amphi",
-   autoStart: true,
-   requires: [ComponentManager],
+  id: "@amphi/pipeline-components-core",
+  description: "Add components to Amphi",
+  autoStart: true,
+  requires: [ComponentManager],
 
-   activate: (app: JupyterFrontEnd, componentService: any) => {
-      console.log("Amphi extension pipeline-components-core is activated!");
+  activate: (app: JupyterFrontEnd, componentService: any) => {
+    console.log("Amphi extension pipeline-components-core is activated!");
 
-      const g: any = globalThis as any;
-      g.Amphi = g.Amphi || {};
-      g.Amphi.BaseCoreComponent = BaseCoreComponent;
+    const g: any = globalThis as any;
+    g.Amphi = g.Amphi || {};
+    g.Amphi.BaseCoreComponent = BaseCoreComponent;
 
-      // Input
-      componentService.addComponent(InlineInput.getInstance());
-      componentService.addComponent(CsvFileInput.getInstance());
-      componentService.addComponent(ExcelFileInput.getInstance());
-      componentService.addComponent(ParquetFileInput.getInstance());
-      componentService.addComponent(JsonFileInput.getInstance());
-      componentService.addComponent(XmlFileInput.getInstance());
-      componentService.addComponent(PdfTablesInput.getInstance());
-      componentService.addComponent(S3FileInput.getInstance());
-      componentService.addComponent(RestInput.getInstance());
-      componentService.addComponent(GoogleSheetsInput.getInstance());
-      componentService.addComponent(HelloDate.getInstance());
-      // componentService.addComponent(MySQLInput.getInstance())
-      // componentService.addComponent(PostgresInput.getInstance())
-      // componentService.addComponent(OracleInput.getInstance())
-      // componentService.addComponent(SqlServerInput.getInstance())
-      // componentService.addComponent(SnowflakeInput.getInstance())
-      // componentService.addComponent(ODBCInput.getInstance())
-      componentService.addComponent(DatabaseInput.getInstance());
-      // componentService.addComponent(CustomInput.getInstance());
-      componentService.addComponent(GenerateCalendar.getInstance());
-      // componentService.addComponent(PyGWalker.getInstance())
-      // componentService.addComponent(Slider.getInstance())
+    // Input
+    componentService.addComponent(InlineInput.getInstance());
+    componentService.addComponent(CsvFileInput.getInstance());
+    componentService.addComponent(ExcelFileInput.getInstance());
+    componentService.addComponent(ParquetFileInput.getInstance());
+    componentService.addComponent(JsonFileInput.getInstance());
+    componentService.addComponent(XmlFileInput.getInstance());
+    componentService.addComponent(PdfTablesInput.getInstance());
+    componentService.addComponent(S3FileInput.getInstance());
+    componentService.addComponent(RestInput.getInstance());
+    componentService.addComponent(GoogleSheetsInput.getInstance());
+    componentService.addComponent(HelloDate.getInstance());
+    // componentService.addComponent(MySQLInput.getInstance())
+    // componentService.addComponent(PostgresInput.getInstance())
+    // componentService.addComponent(OracleInput.getInstance())
+    // componentService.addComponent(SqlServerInput.getInstance())
+    // componentService.addComponent(SnowflakeInput.getInstance())
+    // componentService.addComponent(ODBCInput.getInstance())
+    componentService.addComponent(DatabaseInput.getInstance());
+    // componentService.addComponent(CustomInput.getInstance());
+    componentService.addComponent(GenerateCalendar.getInstance());
+    // componentService.addComponent(PyGWalker.getInstance())
+    // componentService.addComponent(Slider.getInstance())
 
-      // Processors
-      componentService.addComponent(RenameColumns.getInstance());
-      componentService.addComponent(FilterColumns.getInstance());
-      componentService.addComponent(Filter.getInstance());
-      componentService.addComponent(Sort.getInstance());
-      componentService.addComponent(SplitColumn.getInstance());
-      componentService.addComponent(Extract.getInstance());
-      // componentService.addComponent(FormulaRow.getInstance());
-      componentService.addComponent(CombinedJoin.getInstance());
-      componentService.addComponent(Unite.getInstance());
-      componentService.addComponent(Aggregate.getInstance());
-      componentService.addComponent(Pivot.getInstance());
-      componentService.addComponent(Transpose.getInstance());
-      componentService.addComponent(Deduplicate.getInstance());
-      componentService.addComponent(TypeConverter.getInstance());
-      componentService.addComponent(DateTimeConverter.getInstance());
-      componentService.addComponent(DataCleansing.getInstance());
-      componentService.addComponent(Sample.getInstance());
-      // componentService.addComponent(CustomTransformations.getInstance());
-      componentService.addComponent(GenerateIDColumn.getInstance());
-      componentService.addComponent(JSONTools.getInstance());
-      // componentService.addComponent(HierarchyPath.getInstance());
-      componentService.addComponent(CompareDataframes.getInstance());
-      componentService.addComponent(DynamicGenerateCalendar.getInstance());
+    // Processors
+    componentService.addComponent(RenameColumns.getInstance());
+    componentService.addComponent(FilterColumns.getInstance());
+    componentService.addComponent(Filter.getInstance());
+    componentService.addComponent(CustomFilter.getInstance());
+    componentService.addComponent(Sort.getInstance());
+    componentService.addComponent(SplitColumn.getInstance());
+    componentService.addComponent(Extract.getInstance());
+    // componentService.addComponent(FormulaRow.getInstance());
+    componentService.addComponent(CombinedJoin.getInstance());
+    componentService.addComponent(Unite.getInstance());
+    componentService.addComponent(Aggregate.getInstance());
+    componentService.addComponent(Pivot.getInstance());
+    componentService.addComponent(Transpose.getInstance());
+    componentService.addComponent(Deduplicate.getInstance());
+    componentService.addComponent(TypeConverter.getInstance());
+    componentService.addComponent(DateTimeConverter.getInstance());
+    componentService.addComponent(DataCleansing.getInstance());
+    componentService.addComponent(Sample.getInstance());
+    // componentService.addComponent(CustomTransformations.getInstance());
+    componentService.addComponent(GenerateIDColumn.getInstance());
+    componentService.addComponent(JSONTools.getInstance());
+    // componentService.addComponent(HierarchyPath.getInstance());
+    componentService.addComponent(CompareDataframes.getInstance());
+    componentService.addComponent(DynamicGenerateCalendar.getInstance());
 
-      // Outputs
-      componentService.addComponent(CsvFileOutput.getInstance());
-      componentService.addComponent(JsonFileOutput.getInstance());
-      componentService.addComponent(ExcelFileOutput.getInstance());
-      componentService.addComponent(ParquetFileOutput.getInstance());
-      componentService.addComponent(XmlFileOutput.getInstance());
-      componentService.addComponent(GoogleSheetsOutput.getInstance());
-      componentService.addComponent(S3FileOutput.getInstance());
-      componentService.addComponent(DatabaseOutput.getInstance());
-      componentService.addComponent(Console.getInstance());
-      componentService.addComponent(CustomOutput.getInstance());
+    // Outputs
+    componentService.addComponent(CsvFileOutput.getInstance());
+    componentService.addComponent(JsonFileOutput.getInstance());
+    componentService.addComponent(ExcelFileOutput.getInstance());
+    componentService.addComponent(ParquetFileOutput.getInstance());
+    componentService.addComponent(XmlFileOutput.getInstance());
+    componentService.addComponent(GoogleSheetsOutput.getInstance());
+    componentService.addComponent(S3FileOutput.getInstance());
+    componentService.addComponent(DatabaseOutput.getInstance());
+    componentService.addComponent(Console.getInstance());
+    componentService.addComponent(CustomOutput.getInstance());
 
-      // Settings
-      componentService.addComponent(EnvVariables.getInstance());
-      componentService.addComponent(EnvFile.getInstance());
-      componentService.addComponent(Connection.getInstance());
+    // Settings
+    componentService.addComponent(EnvVariables.getInstance());
+    componentService.addComponent(EnvFile.getInstance());
+    componentService.addComponent(Connection.getInstance());
 
-      // Misc
-      componentService.addComponent(Summary.getInstance());
-      componentService.addComponent(FrequencyAnalysis.getInstance());
-      componentService.addComponent(UniqueKeyDetector.getInstance());
-      componentService.addComponent(FileAction.getInstance());
-      componentService.addComponent(Annotation.getInstance());
+    // Misc
+    componentService.addComponent(Summary.getInstance());
+    componentService.addComponent(FrequencyAnalysis.getInstance());
+    componentService.addComponent(UniqueKeyDetector.getInstance());
+    componentService.addComponent(FileAction.getInstance());
+    componentService.addComponent(Annotation.getInstance());
 
-      // Settings
-      componentService.addComponent(EnvVariables.getInstance());
-      componentService.addComponent(EnvFile.getInstance());
-      componentService.addComponent(Connection.getInstance());
+    // Settings
+    componentService.addComponent(EnvVariables.getInstance());
+    componentService.addComponent(EnvFile.getInstance());
+    componentService.addComponent(Connection.getInstance());
 
-      // Developer
-      componentService.addComponent(FormExample.getInstance());
-      componentService.addComponent(DataframeList.getInstance());
-      componentService.addComponent(DataframeDelete.getInstance());
-      componentService.addComponent(PackagesList.getInstance());
-   },
+    // Developer
+    componentService.addComponent(FormExample.getInstance());
+    componentService.addComponent(DataframeList.getInstance());
+    componentService.addComponent(DataframeDelete.getInstance());
+    componentService.addComponent(PackagesList.getInstance());
+  },
 };
 
 export default plugin;

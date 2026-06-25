@@ -34,7 +34,7 @@ export { DynamicGenerateCalendar } from "./transforms/DynamicGenerateCalendar";
 // Transforms
 export { Filter } from "./transforms/Filter";
 export { Aggregate } from "./transforms/Aggregate";
-// export { CustomTransformations } from "./custom/CustomTransformations";
+export { CustomFilter } from "./transforms/CustomFilter";
 export { SplitColumn } from "./transforms/SplitColumn";
 export { Deduplicate } from "./transforms/Deduplicate";
 export { ExpandList } from "./transforms/JSON/ExpandList";

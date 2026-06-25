@@ -1,35 +1,51 @@
-import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
-import { Card, Cascader, Col, Flex, Form, Modal, Drawer, Radio, Row, Switch, Typography, Select, Divider, Space, Button } from 'antd';
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { renderFormItem } from './formUtils'
-import CodeTextarea from './forms/CodeTextarea';
-import InputFile from './forms/InputFile';
-import InputFiles from './forms/InputFiles';
-import InputQuantity from './forms/InputQuantity';
-import InputRegular from './forms/InputRegular';
-import TextareaRegular from './forms/TextareaRegular';
-import DataMapping from './forms/dataMapping';
-import KeyValueColumns from './forms/keyValueColumns';
-import KeyValueColumnsSelect from './forms/keyValueColumnsSelect';
-import KeyValueColumnsRadio from './forms/keyValueColumnsRadio';
-import ColumnOperationColumn from './forms/ColumnOperationColumn';
-import KeyValueForm from './forms/keyValueForm';
-import SelectColumn from './forms/selectColumn';
-import SelectColumns from './forms/selectColumns';
-import SelectFromSQLQuery from './forms/selectFromSQLQuery';
-import SelectFromPythonQuery from './forms/selectFromPythonQuery';
-import SelectCustomizable from './forms/selectCustomizable';
-import SelectMultipleCustomizable from './forms/selectMultipleCustomizable';
-import SelectRegular from './forms/selectRegular';
-import SelectTokenization from './forms/selectTokenization';
-import TransferData from './forms/transferData';
-import ValuesListForm from './forms/valuesListForm';
-import FormulaColumns from './forms/FormulaColumns';
-import DatePickerForm from './forms/DatePickerForm';
-import { PipelineService } from './PipelineService';
-import { ThemeConsumer } from 'styled-components';
-import SelectSheetFromExcel from './forms/selectSheetFromExcel';
-
+import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
+import {
+  Card,
+  Cascader,
+  Col,
+  Flex,
+  Form,
+  Modal,
+  Drawer,
+  Radio,
+  Row,
+  Switch,
+  Typography,
+  Select,
+  Divider,
+  Space,
+  Button,
+} from "antd";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
+import { renderFormItem } from "./formUtils";
+import CodeTextarea from "./forms/CodeTextarea";
+import InputFile from "./forms/InputFile";
+import InputFiles from "./forms/InputFiles";
+import InputQuantity from "./forms/InputQuantity";
+import InputRegular from "./forms/InputRegular";
+import TextareaRegular from "./forms/TextareaRegular";
+import DataMapping from "./forms/dataMapping";
+import KeyValueColumns from "./forms/keyValueColumns";
+import KeyValueColumnsSelect from "./forms/keyValueColumnsSelect";
+import KeyValueColumnsRadio from "./forms/keyValueColumnsRadio";
+import ColumnOperationColumn from "./forms/ColumnOperationColumn";
+import KeyValueForm from "./forms/keyValueForm";
+import SelectColumn from "./forms/selectColumn";
+import SelectColumns from "./forms/selectColumns";
+import SelectFromSQLQuery from "./forms/selectFromSQLQuery";
+import SelectFromPythonQuery from "./forms/selectFromPythonQuery";
+import SelectCustomizable from "./forms/selectCustomizable";
+import SelectMultipleCustomizable from "./forms/selectMultipleCustomizable";
+import SelectRegular from "./forms/selectRegular";
+import SelectTokenization from "./forms/selectTokenization";
+import TransferData from "./forms/transferData";
+import ValuesListForm from "./forms/valuesListForm";
+import FormulaColumns from "./forms/FormulaColumns";
+import DatePickerForm from "./forms/DatePickerForm";
+import { PipelineService } from "./PipelineService";
+import { ThemeConsumer } from "styled-components";
+import SelectSheetFromExcel from "./forms/selectSheetFromExcel";
+import DataMapping2 from "./forms/dataMapping2";
 
 // Set default options to component if specified
 export const setDefaultConfig = ({
@@ -49,11 +65,17 @@ export const setDefaultConfig = ({
         };
       }
       return node;
-    })
+    }),
   );
 };
 
-export const onChange = ({ evtTargetValue, field, nodeId, store, setNodes }: OnChangeProps): void => {
+export const onChange = ({
+  evtTargetValue,
+  field,
+  nodeId,
+  store,
+  setNodes,
+}: OnChangeProps): void => {
   const newValue = evtTargetValue;
   const { nodeInternals } = store.getState();
   const currentTimestamp = Date.now(); // Current timestamp in milliseconds since Unix epoch
@@ -61,7 +83,7 @@ export const onChange = ({ evtTargetValue, field, nodeId, store, setNodes }: OnC
   setNodes(
     Array.from(nodeInternals.values()).map((node) => {
       if (node.id === nodeId) {
-        let fieldParts = field.split('.');
+        let fieldParts = field.split(".");
 
         // Set or update the main field
         if (fieldParts.length === 1) {
@@ -80,248 +102,277 @@ export const onChange = ({ evtTargetValue, field, nodeId, store, setNodes }: OnC
         }
 
         // Set or update the lastUpdated field with the current timestamp
-        if (field !== 'lastExecuted') {
+        if (field !== "lastExecuted") {
           node.data = { ...node.data, lastUpdated: currentTimestamp };
         } else {
           node.data = { ...node.data };
         }
       }
       return node;
-    })
+    }),
   );
 };
 
-export const GenerateUIFormComponent = React.memo(({
-  nodeId,
-  type,
-  name,
-  form,
-  data,
-  context,
-  componentService,
-  manager,
-  commands,
-  handleChange,
-  modalOpen,
-  setModalOpen
-}: FormComponentProps) => {
-  const stopPropagation = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-  }, []);
+export const GenerateUIFormComponent = React.memo(
+  ({
+    nodeId,
+    type,
+    name,
+    form,
+    data,
+    context,
+    componentService,
+    manager,
+    commands,
+    handleChange,
+    modalOpen,
+    setModalOpen,
+  }: FormComponentProps) => {
+    const stopPropagation = useCallback((e: React.MouseEvent) => {
+      e.stopPropagation();
+    }, []);
 
-  const [fieldsForm] = Form.useForm();
-  const [formValues, setFormValues] = useState(fieldsForm.getFieldsValue());
+    const [fieldsForm] = Form.useForm();
+    const [formValues, setFormValues] = useState(fieldsForm.getFieldsValue());
 
-  useEffect(() => {
-    setFormValues(fieldsForm.getFieldsValue());
-  }, [fieldsForm]);
+    useEffect(() => {
+      setFormValues(fieldsForm.getFieldsValue());
+    }, [fieldsForm]);
 
-  return (
-    <div onDoubleClick={stopPropagation}>
-      <Form
-        form={fieldsForm}
-        layout="vertical"
-        size="small"
-        onValuesChange={(_, values) => {
-          setFormValues(values);
-        }}>
-        <GenerateUIInputs
-          name={name}
-          nodeId={nodeId}
-          form={form}
-          data={data}
-          context={context}
-          componentService={componentService}
-          manager={manager}
-          commands={commands}
-          handleChange={handleChange}
-          advanced={false}
-          formValues={formValues}
-        />
+    return (
+      <div onDoubleClick={stopPropagation}>
+        <Form
+          form={fieldsForm}
+          layout="vertical"
+          size="small"
+          onValuesChange={(_, values) => {
+            setFormValues(values);
+          }}
+        >
+          <GenerateUIInputs
+            name={name}
+            nodeId={nodeId}
+            form={form}
+            data={data}
+            context={context}
+            componentService={componentService}
+            manager={manager}
+            commands={commands}
+            handleChange={handleChange}
+            advanced={false}
+            formValues={formValues}
+          />
 
-        <ConfigModal
-          modalOpen={modalOpen}
-          setModalOpen={setModalOpen}
-          name={name}
-          nodeId={nodeId}
-          form={form}
-          data={data}
-          context={context}
-          componentService={componentService}
-          manager={manager}
-          commands={commands}
-          handleChange={handleChange}
-          advanced
-        />
-      </Form>
-    </div>
-  );
-});
+          <ConfigModal
+            modalOpen={modalOpen}
+            setModalOpen={setModalOpen}
+            name={name}
+            nodeId={nodeId}
+            form={form}
+            data={data}
+            context={context}
+            componentService={componentService}
+            manager={manager}
+            commands={commands}
+            handleChange={handleChange}
+            advanced
+          />
+        </Form>
+      </div>
+    );
+  },
+);
 
-export const GenerateUIInputs = React.memo(({
-  name,
-  nodeId,
-  form,
-  data,
-  context,
-  componentService,
-  manager,
-  commands,
-  handleChange,
-  advanced,
-  formValues
-}: UIInputsProps) => {
+export const GenerateUIInputs = React.memo(
+  ({
+    name,
+    nodeId,
+    form,
+    data,
+    context,
+    componentService,
+    manager,
+    commands,
+    handleChange,
+    advanced,
+    formValues,
+  }: UIInputsProps) => {
+    const [connections, setConnections] = useState([]);
+    const [optionsConnections, setOptionsConnections] = useState<
+      Record<string, any[]>
+    >({});
 
-  const [connections, setConnections] = useState([]);
-  const [optionsConnections, setOptionsConnections] = useState<Record<string, any[]>>({});
+    const fetchConnections = useCallback(() => {
+      const allConnections = PipelineService.getConnections(
+        context.model.toString(),
+      );
+      setConnections(allConnections);
 
-  const fetchConnections = useCallback(() => {
+      const connectionsByType = allConnections.reduce((acc, connection) => {
+        const connectionType = connection.connectionType;
+        if (!acc[connectionType]) {
+          acc[connectionType] = [];
+        }
+        acc[connectionType].push(renderItem(connection.connectionName));
+        return acc;
+      }, {} as Record<string, any[]>);
 
-    const allConnections = PipelineService.getConnections(context.model.toString());
-    setConnections(allConnections);
+      setOptionsConnections(connectionsByType);
+    }, [context]);
 
-    const connectionsByType = allConnections.reduce((acc, connection) => {
-      const connectionType = connection.connectionType;
-      if (!acc[connectionType]) {
-        acc[connectionType] = [];
-      }
-      acc[connectionType].push(renderItem(connection.connectionName));
-      return acc;
-    }, {} as Record<string, any[]>);
-
-    setOptionsConnections(connectionsByType);
-  }, [context]);
-
-  // Function to check if a field should be displayed based on its condition
-  const shouldDisplayField = useCallback((field, values) => {
-    if (!field.condition) {
-      return true;
-    }
-
-    const checkCondition = (condition, obj) => {
-      return Object.keys(condition).every(key => {
-        const conditionValue = condition[key];
-        const fieldValue = obj[key];
-
-        if (typeof conditionValue === "object" && !Array.isArray(conditionValue) && fieldValue !== undefined) {
-          return checkCondition(conditionValue, fieldValue);
+    // Function to check if a field should be displayed based on its condition
+    const shouldDisplayField = useCallback(
+      (field, values) => {
+        if (!field.condition) {
+          return true;
         }
 
-        const result = Array.isArray(conditionValue)
-          ? conditionValue.includes(fieldValue)
-          : fieldValue === conditionValue;
+        const checkCondition = (condition, obj) => {
+          return Object.keys(condition).every((key) => {
+            const conditionValue = condition[key];
+            const fieldValue = obj[key];
 
-        return result;
-      });
-    };
+            if (
+              typeof conditionValue === "object" &&
+              !Array.isArray(conditionValue) &&
+              fieldValue !== undefined
+            ) {
+              return checkCondition(conditionValue, fieldValue);
+            }
 
-    const finalResult = checkCondition(field.condition, values);
-    return finalResult;
-  }, [data]);
+            const result = Array.isArray(conditionValue)
+              ? conditionValue.includes(fieldValue)
+              : fieldValue === conditionValue;
 
-  const renderItem = (title: string) => ({
-    value: title,
-    label: (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-        }}
-      >
-        {title}
-      </div>
-    ),
-  });
+            return result;
+          });
+        };
 
-  const handleSelectConnection = useCallback((connectionName: string, attributeId: string) => {
+        const finalResult = checkCondition(field.condition, values);
+        return finalResult;
+      },
+      [data],
+    );
 
-    const selectedConnection = connections.find(conn => conn.connectionName === connectionName);
-    if (selectedConnection) {
-      selectedConnection.variables.forEach(variable => {
-        const { key, name } = variable;
-        const VarName = name;
-        const fieldId = `${key}`;
-        handleChange('{' + `${VarName}` + '}', fieldId);
-      });
-      handleChange(connectionName, attributeId);
-    }
-  }, [connections, handleChange]);
-
-  const handleRemoveConnection = useCallback((attributeId: string) => {
-    const connectionName = data[attributeId];
-    const selectedConnection = connections.find(conn => conn.connectionName === connectionName);
-    if (selectedConnection) {
-      selectedConnection.variables.forEach(variable => {
-        const { key } = variable;
-        const fieldId = `${key}`;
-        handleChange('', fieldId);
-      });
-      handleChange('', attributeId);
-    }
-  }, [connections, data, handleChange]);
-
-  const groupedFields = useMemo(() => form.fields.reduce((acc: Record<string, FieldDescriptor[]>, field: FieldDescriptor) => {
-    const connection = field.connection || 'default';
-    if (!acc[connection]) {
-      acc[connection] = [];
-    }
-    acc[connection].push(field);
-    return acc;
-  }, {}), [form.fields]);
-
-  const groupFieldsIntoRows = useCallback((fields: FieldDescriptor[]) => {
-    const rows: FieldDescriptor[][] = [];
-    const rowByColumnId = new Map<string | number, FieldDescriptor[]>();
-
-    fields.forEach((field) => {
-      if (field.columnId === undefined || field.columnId === null) {
-        rows.push([field]);
-        return;
-      }
-
-      const existingRow = rowByColumnId.get(field.columnId);
-      if (existingRow) {
-        existingRow.push(field);
-        return;
-      }
-
-      const newRow = [field];
-      rowByColumnId.set(field.columnId, newRow);
-      rows.push(newRow);
+    const renderItem = (title: string) => ({
+      value: title,
+      label: (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
+          {title}
+        </div>
+      ),
     });
 
-    return rows;
-  }, []);
+    const handleSelectConnection = useCallback(
+      (connectionName: string, attributeId: string) => {
+        const selectedConnection = connections.find(
+          (conn) => conn.connectionName === connectionName,
+        );
+        if (selectedConnection) {
+          selectedConnection.variables.forEach((variable) => {
+            const { key, name } = variable;
+            const VarName = name;
+            const fieldId = `${key}`;
+            handleChange("{" + `${VarName}` + "}", fieldId);
+          });
+          handleChange(connectionName, attributeId);
+        }
+      },
+      [connections, handleChange],
+    );
 
-  const renderField = useCallback((field: FieldDescriptor, index: number) => {
+    const handleRemoveConnection = useCallback(
+      (attributeId: string) => {
+        const connectionName = data[attributeId];
+        const selectedConnection = connections.find(
+          (conn) => conn.connectionName === connectionName,
+        );
+        if (selectedConnection) {
+          selectedConnection.variables.forEach((variable) => {
+            const { key } = variable;
+            const fieldId = `${key}`;
+            handleChange("", fieldId);
+          });
+          handleChange("", attributeId);
+        }
+      },
+      [connections, data, handleChange],
+    );
 
-    if (!advanced && field.advanced) {
-      return null;
-    }
+    const groupedFields = useMemo(
+      () =>
+        form.fields.reduce(
+          (acc: Record<string, FieldDescriptor[]>, field: FieldDescriptor) => {
+            const connection = field.connection || "default";
+            if (!acc[connection]) {
+              acc[connection] = [];
+            }
+            acc[connection].push(field);
+            return acc;
+          },
+          {},
+        ),
+      [form.fields],
+    );
 
-    // Directly check if the field should be displayed
-    if (!shouldDisplayField(field, data)) {
-      return null;
-    }
+    const groupFieldsIntoRows = useCallback((fields: FieldDescriptor[]) => {
+      const rows: FieldDescriptor[][] = [];
+      const rowByColumnId = new Map<string | number, FieldDescriptor[]>();
 
-    let value: any;
-    let values: any[] = [];
-    const fieldParts = field.id.split('.');
+      fields.forEach((field) => {
+        if (field.columnId === undefined || field.columnId === null) {
+          rows.push([field]);
+          return;
+        }
 
-    if (Array.isArray(data[field.id])) {
-      values = data[field.id];
-    } else if (fieldParts.length === 1) {
-      if (data[field.id] !== undefined) {
-        value = data[field.id];
-      }
-    } else {
-      const [outerField, innerField] = fieldParts;
-      if (data[outerField] && data[outerField][innerField] !== undefined) {
-        value = data[outerField][innerField];
-      }
-    }
+        const existingRow = rowByColumnId.get(field.columnId);
+        if (existingRow) {
+          existingRow.push(field);
+          return;
+        }
 
-    /*
+        const newRow = [field];
+        rowByColumnId.set(field.columnId, newRow);
+        rows.push(newRow);
+      });
+
+      return rows;
+    }, []);
+
+    const renderField = useCallback(
+      (field: FieldDescriptor, index: number) => {
+        if (!advanced && field.advanced) {
+          return null;
+        }
+
+        // Directly check if the field should be displayed
+        if (!shouldDisplayField(field, data)) {
+          return null;
+        }
+
+        let value: any;
+        let values: any[] = [];
+        const fieldParts = field.id.split(".");
+
+        if (Array.isArray(data[field.id])) {
+          values = data[field.id];
+        } else if (fieldParts.length === 1) {
+          if (data[field.id] !== undefined) {
+            value = data[field.id];
+          }
+        } else {
+          const [outerField, innerField] = fieldParts;
+          if (data[outerField] && data[outerField][innerField] !== undefined) {
+            value = data[outerField][innerField];
+          }
+        }
+
+        /*
     const validateInput = (value: any) => {
       if (field.validation) {
         const pattern = new RegExp(field.validation, "i");
@@ -337,188 +388,410 @@ export const GenerateUIInputs = React.memo(({
     }, [value]);
     */
 
-    const commonProps = { field, handleChange, context, advanced };
+        const commonProps = { field, handleChange, context, advanced };
 
-    switch (field.type) {
-      case "input":
-        return renderFormItem(field, <InputRegular {...commonProps} value={value} />);
-      case "radio":
-        return renderFormItem(field, (
-          <Flex vertical gap="middle">
-            <Radio.Group defaultValue={value} size={advanced ? "middle" : "small"} onChange={(e: any) => handleChange(e.target.value, field.id)} buttonStyle="solid">
-              {field.options.map((option: any) => (
-                <Radio.Button value={option.value}>{option.label}</Radio.Button>
-              ))}
-            </Radio.Group>
-          </Flex>
-        ));
-      case "file":
-        return renderFormItem(field, <InputFile {...commonProps} value={value} manager={manager} />);
-      case "files":
-        return renderFormItem(field, <InputFiles {...commonProps} values={values} manager={manager} />);
-      case "columns":
-        return renderFormItem(field, <SelectColumns {...commonProps} defaultValues={values} componentService={componentService} commands={commands} nodeId={nodeId} />);
-      case "column":
-        return renderFormItem(field, <SelectColumn {...commonProps} defaultValue={value} componentService={componentService} commands={commands} nodeId={nodeId} />);
-      case "table":
-        return renderFormItem(field, <SelectFromSQLQuery {...commonProps} data={data} defaultValue={value} componentService={componentService} commands={commands} nodeId={nodeId} />);
-      case "collection":
-        return renderFormItem(field, <SelectFromPythonQuery {...commonProps} data={data} defaultValue={value} componentService={componentService} commands={commands} nodeId={nodeId} />);
-      case "sheets":
-        return renderFormItem(field, <SelectSheetFromExcel {...commonProps} data={data} defaultValue={value} componentService={componentService} commands={commands} nodeId={nodeId} />);
-      case "selectCustomizable":
-        return renderFormItem(field, <SelectCustomizable {...commonProps} defaultValue={value} />);
-      case "selectMultipleCustomizable":
-        return renderFormItem(field, <SelectMultipleCustomizable {...commonProps} defaultValues={values} />);
-      case "selectTokenization":
-        return renderFormItem(field, <SelectTokenization {...commonProps} defaultValue={value} />);
-      case "select":
-        return renderFormItem(field, <SelectRegular {...commonProps} defaultValue={value} />);
-      case "textarea":
-        return renderFormItem(field, <TextareaRegular {...commonProps} value={value} rows={field.rows} />);
-      case "codeTextarea":
-        return renderFormItem(field, <CodeTextarea {...commonProps} value={value} componentService={componentService} commands={commands} nodeId={nodeId} />);
-      case "boolean":
-        return renderFormItem(field, (
-          <Switch
-            onChange={(checked) => handleChange(checked, field.id)}
-            checkedChildren={<CheckOutlined />}
-            unCheckedChildren={<CloseOutlined />}
-            defaultChecked={value === true}
-          />
-        ));
-      case "cascader":
-        return renderFormItem(field, (
-          <Cascader
-            value={values}
-            placeholder={field.placeholder}
-            options={field.options}
-            {...(field.onlyLastValue ? { displayRender: (labels: string[]) => labels[labels.length - 1] } : {})}
-            onChange={(value: any) => handleChange(value, field.id)}
-          />
-        ));
-      case "keyvalue":
-        return renderFormItem(field, <KeyValueForm {...commonProps} initialValues={values} />);
-      case "keyvalueColumns":
-        return renderFormItem(field, <KeyValueColumns {...commonProps} initialValues={values} componentService={componentService} commands={commands} nodeId={nodeId} />);
-      case "keyvalueColumnsSelect":
-        return renderFormItem(field, <KeyValueColumnsSelect {...commonProps} initialValues={values} componentService={componentService} commands={commands} nodeId={nodeId} />);
-      case "columnOperationColumn":
-        return renderFormItem(field, <ColumnOperationColumn {...commonProps} initialValues={values} data={{ ...data, ...(formValues || {}) }} componentService={componentService} commands={commands} nodeId={nodeId} />);
-      case "keyvalueColumnsRadio":
-        return renderFormItem(field, <KeyValueColumnsRadio {...commonProps} initialValues={values} componentService={componentService} commands={commands} nodeId={nodeId} />);
-      case "valuesList":
-        return renderFormItem(field, <ValuesListForm {...commonProps} initialValues={values} />);
-      case "inputNumber":
-        return renderFormItem(field, <InputQuantity {...commonProps} value={value} />);
-      case "transferData":
-        return renderFormItem(field, <TransferData {...commonProps} defaultValue={value} componentService={componentService} commands={commands} nodeId={nodeId} />);
-      case "dataMapping":
-        return renderFormItem(field, <DataMapping data={data} {...commonProps} defaultValue={values} componentService={componentService} commands={commands} nodeId={nodeId} />);
-      case "formulaColumns":
-        return renderFormItem(field, <FormulaColumns {...commonProps} defaultValue={value} componentService={componentService} commands={commands} nodeId={nodeId} />);
-      case "date":
-        return renderFormItem(field, <DatePickerForm {...commonProps} value={value} />);
-      case "info":
-        return <Typography.Paragraph style={{ padding: '5px' }}>{field.text}</Typography.Paragraph>;
-      default:
-        return null;
-    }
-  }, [data, formValues, handleChange, componentService, commands, manager, advanced]);
-
-  const renderFieldRows = useCallback((fields: FieldDescriptor[], groupKeyPrefix: string) => {
-    const rows = groupFieldsIntoRows(fields);
-
-    return rows.map((rowFields, rowIndex) => {
-      const renderedFields = rowFields
-        .map((field, fieldIndex) => ({
-          field,
-          content: renderField(field, fieldIndex)
-        }))
-        .filter(item => item.content !== null);
-
-      if (renderedFields.length === 0) {
-        return null;
-      }
-
-      if (renderedFields.length === 1) {
-        return (
-          <React.Fragment key={`${groupKeyPrefix}-row-${rowIndex}`}>
-            {renderedFields[0].content}
-          </React.Fragment>
-        );
-      }
-
-      return (
-        <Row key={`${groupKeyPrefix}-row-${rowIndex}`} gutter={8} align="top" wrap>
-          {renderedFields.map(({ field, content }) => (
-            <Col key={`${groupKeyPrefix}-${field.id}`} flex="1 1 0">
-              {content}
-            </Col>
-          ))}
-        </Row>
-      );
-    });
-  }, [groupFieldsIntoRows, renderField]);
-
-  // Helper function to check if any field in a connection should be displayed
-  const shouldDisplayConnection = (fields: FieldDescriptor[]) => {
-    return fields.some(field => shouldDisplayField(field, data));
-  };
-
-  return (
-    <>
-      {Object.entries(groupedFields).map(([connection, fields], groupIndex) => {
-        if (connection === 'default' || (!advanced && (fields as FieldDescriptor[]).some(field => field.advanced))) return null;
-        const connectionFields = fields as FieldDescriptor[];
-
-        // Check if the connection card should be displayed
-        if (!shouldDisplayConnection(connectionFields)) {
-          return null;
+        switch (field.type) {
+          case "input":
+            return renderFormItem(
+              field,
+              <InputRegular {...commonProps} value={value} />,
+            );
+          case "radio":
+            return renderFormItem(
+              field,
+              <Flex vertical gap="middle">
+                <Radio.Group
+                  defaultValue={value}
+                  size={advanced ? "middle" : "small"}
+                  onChange={(e: any) => handleChange(e.target.value, field.id)}
+                  buttonStyle="solid"
+                >
+                  {field.options.map((option: any) => (
+                    <Radio.Button value={option.value}>
+                      {option.label}
+                    </Radio.Button>
+                  ))}
+                </Radio.Group>
+              </Flex>,
+            );
+          case "file":
+            return renderFormItem(
+              field,
+              <InputFile {...commonProps} value={value} manager={manager} />,
+            );
+          case "files":
+            return renderFormItem(
+              field,
+              <InputFiles {...commonProps} values={values} manager={manager} />,
+            );
+          case "columns":
+            return renderFormItem(
+              field,
+              <SelectColumns
+                {...commonProps}
+                defaultValues={values}
+                componentService={componentService}
+                commands={commands}
+                nodeId={nodeId}
+              />,
+            );
+          case "column":
+            return renderFormItem(
+              field,
+              <SelectColumn
+                {...commonProps}
+                defaultValue={value}
+                componentService={componentService}
+                commands={commands}
+                nodeId={nodeId}
+              />,
+            );
+          case "table":
+            return renderFormItem(
+              field,
+              <SelectFromSQLQuery
+                {...commonProps}
+                data={data}
+                defaultValue={value}
+                componentService={componentService}
+                commands={commands}
+                nodeId={nodeId}
+              />,
+            );
+          case "collection":
+            return renderFormItem(
+              field,
+              <SelectFromPythonQuery
+                {...commonProps}
+                data={data}
+                defaultValue={value}
+                componentService={componentService}
+                commands={commands}
+                nodeId={nodeId}
+              />,
+            );
+          case "sheets":
+            return renderFormItem(
+              field,
+              <SelectSheetFromExcel
+                {...commonProps}
+                data={data}
+                defaultValue={value}
+                componentService={componentService}
+                commands={commands}
+                nodeId={nodeId}
+              />,
+            );
+          case "selectCustomizable":
+            return renderFormItem(
+              field,
+              <SelectCustomizable {...commonProps} defaultValue={value} />,
+            );
+          case "selectMultipleCustomizable":
+            return renderFormItem(
+              field,
+              <SelectMultipleCustomizable
+                {...commonProps}
+                defaultValues={values}
+              />,
+            );
+          case "selectTokenization":
+            return renderFormItem(
+              field,
+              <SelectTokenization {...commonProps} defaultValue={value} />,
+            );
+          case "select":
+            return renderFormItem(
+              field,
+              <SelectRegular {...commonProps} defaultValue={value} />,
+            );
+          case "textarea":
+            return renderFormItem(
+              field,
+              <TextareaRegular
+                {...commonProps}
+                value={value}
+                rows={field.rows}
+              />,
+            );
+          case "codeTextarea":
+            return renderFormItem(
+              field,
+              <CodeTextarea
+                {...commonProps}
+                value={value}
+                componentService={componentService}
+                commands={commands}
+                nodeId={nodeId}
+              />,
+            );
+          case "boolean":
+            return renderFormItem(
+              field,
+              <Switch
+                onChange={(checked) => handleChange(checked, field.id)}
+                checkedChildren={<CheckOutlined />}
+                unCheckedChildren={<CloseOutlined />}
+                defaultChecked={value === true}
+              />,
+            );
+          case "cascader":
+            return renderFormItem(
+              field,
+              <Cascader
+                value={values}
+                placeholder={field.placeholder}
+                options={field.options}
+                {...(field.onlyLastValue
+                  ? {
+                      displayRender: (labels: string[]) =>
+                        labels[labels.length - 1],
+                    }
+                  : {})}
+                onChange={(value: any) => handleChange(value, field.id)}
+              />,
+            );
+          case "keyvalue":
+            return renderFormItem(
+              field,
+              <KeyValueForm {...commonProps} initialValues={values} />,
+            );
+          case "keyvalueColumns":
+            return renderFormItem(
+              field,
+              <KeyValueColumns
+                {...commonProps}
+                initialValues={values}
+                componentService={componentService}
+                commands={commands}
+                nodeId={nodeId}
+              />,
+            );
+          case "keyvalueColumnsSelect":
+            return renderFormItem(
+              field,
+              <KeyValueColumnsSelect
+                {...commonProps}
+                initialValues={values}
+                componentService={componentService}
+                commands={commands}
+                nodeId={nodeId}
+              />,
+            );
+          case "columnOperationColumn":
+            return renderFormItem(
+              field,
+              <ColumnOperationColumn
+                {...commonProps}
+                initialValues={values}
+                data={{ ...data, ...(formValues || {}) }}
+                componentService={componentService}
+                commands={commands}
+                nodeId={nodeId}
+              />,
+            );
+          case "keyvalueColumnsRadio":
+            return renderFormItem(
+              field,
+              <KeyValueColumnsRadio
+                {...commonProps}
+                initialValues={values}
+                componentService={componentService}
+                commands={commands}
+                nodeId={nodeId}
+              />,
+            );
+          case "valuesList":
+            return renderFormItem(
+              field,
+              <ValuesListForm {...commonProps} initialValues={values} />,
+            );
+          case "inputNumber":
+            return renderFormItem(
+              field,
+              <InputQuantity {...commonProps} value={value} />,
+            );
+          case "transferData":
+            return renderFormItem(
+              field,
+              <TransferData
+                {...commonProps}
+                defaultValue={value}
+                componentService={componentService}
+                commands={commands}
+                nodeId={nodeId}
+              />,
+            );
+          case "dataMapping":
+            return renderFormItem(
+              field,
+              <DataMapping
+                data={data}
+                {...commonProps}
+                defaultValue={values}
+                componentService={componentService}
+                commands={commands}
+                nodeId={nodeId}
+              />,
+            );
+          case "dataMapping2":
+            return renderFormItem(field, <DataMapping2 />);
+          case "formulaColumns":
+            return renderFormItem(
+              field,
+              <FormulaColumns
+                {...commonProps}
+                defaultValue={value}
+                componentService={componentService}
+                commands={commands}
+                nodeId={nodeId}
+              />,
+            );
+          case "date":
+            return renderFormItem(
+              field,
+              <DatePickerForm {...commonProps} value={value} />,
+            );
+          case "info":
+            return (
+              <Typography.Paragraph style={{ padding: "5px" }}>
+                {field.text}
+              </Typography.Paragraph>
+            );
+          default:
+            return null;
         }
+      },
+      [
+        data,
+        formValues,
+        handleChange,
+        componentService,
+        commands,
+        manager,
+        advanced,
+      ],
+    );
 
-        const connectionDataId = `${connection}-${groupIndex}`;
-        const selectedConnectionName = data[connectionDataId] || '';
+    const renderFieldRows = useCallback(
+      (fields: FieldDescriptor[], groupKeyPrefix: string) => {
+        const rows = groupFieldsIntoRows(fields);
 
-        const selectConnection = (
-          <Select
-            placeholder="Select Connection"
-            style={{ minWidth: 200 }}
-            onClick={fetchConnections}
-            options={optionsConnections[connection] || []}
-            value={selectedConnectionName || undefined}
-            onChange={(value) => handleSelectConnection(value, connectionDataId)}
-            dropdownRender={(menu) => (
-              <>
-                {menu}
-                <Divider style={{ margin: '8px 0' }} />
-                <Space style={{ padding: '0 4px 4px' }}>
-                  <Button type="text" icon={<CloseOutlined />} onClick={() => handleRemoveConnection(connectionDataId)}>
-                    Remove Connection
-                  </Button>
-                </Space>
-              </>
-            )}
-          />
-        );
+        return rows.map((rowFields, rowIndex) => {
+          const renderedFields = rowFields
+            .map((field, fieldIndex) => ({
+              field,
+              content: renderField(field, fieldIndex),
+            }))
+            .filter((item) => item.content !== null);
 
-        return (
-          <Card
-            size="small"
-            title={`${connection} Connection`}
-            key={`${connection}-${groupIndex}`}
-            style={{ marginTop: '10px', marginBottom: '10px' }}
-            extra={selectConnection}
-            type="inner"
-          >
-            {renderFieldRows(connectionFields, `connection-${connection}-${groupIndex}`)}
-          </Card>
-        );
-      })}
-      {groupedFields.default && renderFieldRows(groupedFields.default, 'default')}
-    </>
-  );
-});
+          if (renderedFields.length === 0) {
+            return null;
+          }
+
+          if (renderedFields.length === 1) {
+            return (
+              <React.Fragment key={`${groupKeyPrefix}-row-${rowIndex}`}>
+                {renderedFields[0].content}
+              </React.Fragment>
+            );
+          }
+
+          return (
+            <Row
+              key={`${groupKeyPrefix}-row-${rowIndex}`}
+              gutter={8}
+              align="top"
+              wrap
+            >
+              {renderedFields.map(({ field, content }) => (
+                <Col key={`${groupKeyPrefix}-${field.id}`} flex="1 1 0">
+                  {content}
+                </Col>
+              ))}
+            </Row>
+          );
+        });
+      },
+      [groupFieldsIntoRows, renderField],
+    );
+
+    // Helper function to check if any field in a connection should be displayed
+    const shouldDisplayConnection = (fields: FieldDescriptor[]) => {
+      return fields.some((field) => shouldDisplayField(field, data));
+    };
+
+    return (
+      <>
+        {Object.entries(groupedFields).map(
+          ([connection, fields], groupIndex) => {
+            if (
+              connection === "default" ||
+              (!advanced &&
+                (fields as FieldDescriptor[]).some((field) => field.advanced))
+            )
+              return null;
+            const connectionFields = fields as FieldDescriptor[];
+
+            // Check if the connection card should be displayed
+            if (!shouldDisplayConnection(connectionFields)) {
+              return null;
+            }
+
+            const connectionDataId = `${connection}-${groupIndex}`;
+            const selectedConnectionName = data[connectionDataId] || "";
+
+            const selectConnection = (
+              <Select
+                placeholder="Select Connection"
+                style={{ minWidth: 200 }}
+                onClick={fetchConnections}
+                options={optionsConnections[connection] || []}
+                value={selectedConnectionName || undefined}
+                onChange={(value) =>
+                  handleSelectConnection(value, connectionDataId)
+                }
+                dropdownRender={(menu) => (
+                  <>
+                    {menu}
+                    <Divider style={{ margin: "8px 0" }} />
+                    <Space style={{ padding: "0 4px 4px" }}>
+                      <Button
+                        type="text"
+                        icon={<CloseOutlined />}
+                        onClick={() => handleRemoveConnection(connectionDataId)}
+                      >
+                        Remove Connection
+                      </Button>
+                    </Space>
+                  </>
+                )}
+              />
+            );
+
+            return (
+              <Card
+                size="small"
+                title={`${connection} Connection`}
+                key={`${connection}-${groupIndex}`}
+                style={{ marginTop: "10px", marginBottom: "10px" }}
+                extra={selectConnection}
+                type="inner"
+              >
+                {renderFieldRows(
+                  connectionFields,
+                  `connection-${connection}-${groupIndex}`,
+                )}
+              </Card>
+            );
+          },
+        )}
+        {groupedFields.default &&
+          renderFieldRows(groupedFields.default, "default")}
+      </>
+    );
+  },
+);
 
 export default function ConfigModal({
   name,
@@ -532,7 +805,7 @@ export default function ConfigModal({
   handleChange,
   advanced,
   modalOpen,
-  setModalOpen
+  setModalOpen,
 }: ConfigModalProps) {
   const componentName = data?.customTitle || name;
 
@@ -543,7 +816,9 @@ export default function ConfigModal({
   const [fieldsForm] = Form.useForm();
   const [formValues, setFormValues] = useState(fieldsForm.getFieldsValue());
 
-  const width = form["fields"].some(field => field.type === 'codeTextarea') ? '80%' : 800;
+  const width = form["fields"].some((field) => field.type === "codeTextarea")
+    ? "80%"
+    : 800;
 
   return (
     <>
@@ -585,7 +860,7 @@ export default function ConfigModal({
         </div>
       </Modal>
     </>
-  )
+  );
 }
 
 // Define interfaces for the parameters used in the functions
@@ -654,9 +929,40 @@ export interface Option {
 }
 
 export interface FieldDescriptor {
-  type: 'file' | 'files' | 'column' | 'columns' | 'table' | 'keyvalue' | 'valuesList' | 'input' | 'password' | 'select' | 'textarea' | 'codeTextarea' | 'radio'
-  | 'cascader' | 'boolean' | 'inputNumber' | 'selectCustomizable' | 'selectTokenization' | 'transferData' | 'keyvalueColumns' | 'keyvalueColumnsSelect' | 'columnOperationColumn' | 'sheets'
-  | 'dataMapping' | 'editableTable' | 'info' | 'cascaderMultiple' | 'selectMultipleCustomizable' | 'formulaColumns' | 'keyvalueColumnsRadio' | 'date' | 'collection';
+  type:
+    | "file"
+    | "files"
+    | "column"
+    | "columns"
+    | "table"
+    | "keyvalue"
+    | "valuesList"
+    | "input"
+    | "password"
+    | "select"
+    | "textarea"
+    | "codeTextarea"
+    | "radio"
+    | "cascader"
+    | "boolean"
+    | "inputNumber"
+    | "selectCustomizable"
+    | "selectTokenization"
+    | "transferData"
+    | "keyvalueColumns"
+    | "keyvalueColumnsSelect"
+    | "columnOperationColumn"
+    | "sheets"
+    | "dataMapping"
+    | "dataMapping2"
+    | "editableTable"
+    | "info"
+    | "cascaderMultiple"
+    | "selectMultipleCustomizable"
+    | "formulaColumns"
+    | "keyvalueColumnsRadio"
+    | "date"
+    | "collection";
   label: string;
   id: string;
   placeholder?: any;
@@ -675,7 +981,7 @@ export interface FieldDescriptor {
   outputType?: string;
   drivers?: string;
   typeOptions?: any;
-  inputType?: 'password';
+  inputType?: "password";
   text?: string;
   imports?: string[];
   query?: string;
@@ -703,7 +1009,7 @@ interface ConfigModalProps {
   data: any;
   context: any;
   componentService: any;
-  manager: any
+  manager: any;
   commands: any;
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   advanced: boolean;
