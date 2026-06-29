@@ -3,7 +3,7 @@ var _JUPYTERLAB;
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "webpack/container/entry/@amphi/components-panel"
+/***/ "webpack/container/entry/@amphi/theme-light"
 /*!***********************!*\
   !*** container entry ***!
   \***********************/
@@ -11,13 +11,10 @@ var _JUPYTERLAB;
 
 var moduleMap = {
 	"./index": () => {
-		return Promise.all([__webpack_require__.e("vendors-node_modules_ant-design_icons_es_icons_CloseOutlined_js-node_modules_ant-design_icons-5b015a"), __webpack_require__.e("node_modules_css-loader_dist_cjs_js_style_base_css-node_modules_style-loader_dist_runtime_inj-ec3a80"), __webpack_require__.e("webpack_sharing_consume_default_react"), __webpack_require__.e("lib_index_js")]).then(() => (() => ((__webpack_require__(/*! ./lib/index.js */ "./lib/index.js")))));
+		return __webpack_require__.e("lib_index_js").then(() => (() => ((__webpack_require__(/*! ./lib/index.js */ "./lib/index.js")))));
 	},
 	"./extension": () => {
-		return Promise.all([__webpack_require__.e("vendors-node_modules_ant-design_icons_es_icons_CloseOutlined_js-node_modules_ant-design_icons-5b015a"), __webpack_require__.e("node_modules_css-loader_dist_cjs_js_style_base_css-node_modules_style-loader_dist_runtime_inj-ec3a80"), __webpack_require__.e("webpack_sharing_consume_default_react"), __webpack_require__.e("lib_index_js")]).then(() => (() => ((__webpack_require__(/*! ./lib/index.js */ "./lib/index.js")))));
-	},
-	"./style": () => {
-		return Promise.all([__webpack_require__.e("node_modules_css-loader_dist_cjs_js_style_base_css-node_modules_style-loader_dist_runtime_inj-ec3a80"), __webpack_require__.e("style_index_js")]).then(() => (() => ((__webpack_require__(/*! ./style/index.js */ "./style/index.js")))));
+		return __webpack_require__.e("lib_index_js").then(() => (() => ((__webpack_require__(/*! ./lib/index.js */ "./lib/index.js")))));
 	}
 };
 var get = (module, getScope) => {
@@ -63,8 +60,8 @@ __webpack_require__.d(exports, {
 /******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = __webpack_module_cache__[moduleId] = {
-/******/ 			id: moduleId,
-/******/ 			loaded: false,
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
 /******/ 			exports: {}
 /******/ 		};
 /******/ 	
@@ -75,10 +72,7 @@ __webpack_require__.d(exports, {
 /******/ 			e.code = 'MODULE_NOT_FOUND';
 /******/ 			throw e;
 /******/ 		}
-/******/ 		__webpack_modules__[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/ 	
-/******/ 		// Flag the module as loaded
-/******/ 		module.loaded = true;
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
 /******/ 	
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
@@ -133,7 +127,7 @@ __webpack_require__.d(exports, {
 /******/ 		// This function allow to reference async chunks
 /******/ 		__webpack_require__.u = (chunkId) => {
 /******/ 			// return url for filenames based on template
-/******/ 			return "" + chunkId + "." + {"vendors-node_modules_ant-design_icons_es_icons_CloseOutlined_js-node_modules_ant-design_icons-5b015a":"9aa1fd23996122063ad1","node_modules_css-loader_dist_cjs_js_style_base_css-node_modules_style-loader_dist_runtime_inj-ec3a80":"e859158eda49ddbff01f","lib_index_js":"2e854cfbd7de935f0293","style_index_js":"8d8db0170498e8805392","vendors-node_modules_antd_es_index_js":"266cc4782ca6df002bba"}[chunkId] + ".js";
+/******/ 			return "" + chunkId + "." + "4c2b8d491628ca7eb53f" + ".js";
 /******/ 		};
 /******/ 	})();
 /******/ 	
@@ -149,21 +143,6 @@ __webpack_require__.d(exports, {
 /******/ 		})();
 /******/ 	})();
 /******/ 	
-/******/ 	/* webpack/runtime/harmony module decorator */
-/******/ 	(() => {
-/******/ 		__webpack_require__.hmd = (module) => {
-/******/ 			module = Object.create(module);
-/******/ 			if (!module.children) module.children = [];
-/******/ 			Object.defineProperty(module, 'exports', {
-/******/ 				enumerable: true,
-/******/ 				set: () => {
-/******/ 					throw new Error('ES Modules may not assign module.exports or exports.*, Use ESM export syntax, instead: ' + module.id);
-/******/ 				}
-/******/ 			});
-/******/ 			return module;
-/******/ 		};
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
 /******/ 	(() => {
 /******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
@@ -172,7 +151,7 @@ __webpack_require__.d(exports, {
 /******/ 	/* webpack/runtime/load script */
 /******/ 	(() => {
 /******/ 		var inProgress = {};
-/******/ 		var dataWebpackPrefix = "@amphi/components-panel:";
+/******/ 		var dataWebpackPrefix = "@amphi/theme-light:";
 /******/ 		// loadScript function to load a script via script tag
 /******/ 		__webpack_require__.l = (url, done, key, chunkId) => {
 /******/ 			if(inProgress[url]) { inProgress[url].push(done); return; }
@@ -225,14 +204,6 @@ __webpack_require__.d(exports, {
 /******/ 		};
 /******/ 	})();
 /******/ 	
-/******/ 	/* webpack/runtime/set anonymous default export name */
-/******/ 	(() => {
-/******/ 		// set .name for anonymous default exports per ES spec
-/******/ 		__webpack_require__.dn = (x) => {
-/******/ 			(Object.getOwnPropertyDescriptor(x, "name") || {}).writable || Object.defineProperty(x, "name", { value: "default", configurable: true });
-/******/ 		};
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/sharing */
 /******/ 	(() => {
 /******/ 		__webpack_require__.S = {};
@@ -254,7 +225,7 @@ __webpack_require__.d(exports, {
 /******/ 			var warn = (msg) => {
 /******/ 				if (typeof console !== "undefined" && console.warn) console.warn(msg);
 /******/ 			};
-/******/ 			var uniqueName = "@amphi/components-panel";
+/******/ 			var uniqueName = "@amphi/theme-light";
 /******/ 			var register = (name, version, factory, eager) => {
 /******/ 				var versions = scope[name] = scope[name] || {};
 /******/ 				var activeVersion = versions[version];
@@ -274,8 +245,7 @@ __webpack_require__.d(exports, {
 /******/ 			var promises = [];
 /******/ 			switch(name) {
 /******/ 				case "default": {
-/******/ 					register("@amphi/components-panel", "0.1.0", () => (Promise.all([__webpack_require__.e("vendors-node_modules_ant-design_icons_es_icons_CloseOutlined_js-node_modules_ant-design_icons-5b015a"), __webpack_require__.e("node_modules_css-loader_dist_cjs_js_style_base_css-node_modules_style-loader_dist_runtime_inj-ec3a80"), __webpack_require__.e("webpack_sharing_consume_default_react"), __webpack_require__.e("lib_index_js")]).then(() => (() => (__webpack_require__(/*! ./lib/index.js */ "./lib/index.js"))))));
-/******/ 					register("antd", "5.24.4", () => (Promise.all([__webpack_require__.e("vendors-node_modules_antd_es_index_js"), __webpack_require__.e("vendors-node_modules_ant-design_icons_es_icons_CloseOutlined_js-node_modules_ant-design_icons-5b015a"), __webpack_require__.e("webpack_sharing_consume_default_react"), __webpack_require__.e("webpack_sharing_consume_default_react-dom")]).then(() => (() => (__webpack_require__(/*! ../../node_modules/antd/es/index.js */ "../../node_modules/antd/es/index.js"))))));
+/******/ 					register("@amphi/theme-light", "0.1.0", () => (__webpack_require__.e("lib_index_js").then(() => (() => (__webpack_require__(/*! ./lib/index.js */ "./lib/index.js"))))));
 /******/ 				}
 /******/ 				break;
 /******/ 			}
@@ -432,30 +402,14 @@ __webpack_require__.d(exports, {
 /******/ 		});
 /******/ 		var installedModules = {};
 /******/ 		var moduleToHandlerMapping = {
-/******/ 			"webpack/sharing/consume/default/react": () => (loadSingletonVersion("default", "react", false, [1,18,2,0])),
-/******/ 			"webpack/sharing/consume/default/@amphi/pipeline-components-manager": () => (loadSingleton("default", "@amphi/pipeline-components-manager", false)),
-/******/ 			"webpack/sharing/consume/default/@jupyterlab/apputils": () => (loadSingletonVersion("default", "@jupyterlab/apputils", false, [1,4,6,3])),
-/******/ 			"webpack/sharing/consume/default/@jupyterlab/coreutils": () => (loadSingletonVersion("default", "@jupyterlab/coreutils", false, [1,6,5,3])),
-/******/ 			"webpack/sharing/consume/default/@jupyterlab/filebrowser": () => (loadSingletonVersion("default", "@jupyterlab/filebrowser", false, [1,4,5,3])),
-/******/ 			"webpack/sharing/consume/default/@jupyterlab/ui-components": () => (loadSingletonVersion("default", "@jupyterlab/ui-components", false, [1,4,5,3])),
-/******/ 			"webpack/sharing/consume/default/antd/antd": () => (loadStrictVersion("default", "antd", false, [4,5,24,4], () => (Promise.all([__webpack_require__.e("vendors-node_modules_antd_es_index_js"), __webpack_require__.e("webpack_sharing_consume_default_react-dom")]).then(() => (() => (__webpack_require__(/*! antd */ "../../node_modules/antd/es/index.js"))))))),
-/******/ 			"webpack/sharing/consume/default/react-dom": () => (loadSingletonVersion("default", "react-dom", false, [1,18,2,0]))
+/******/ 			"webpack/sharing/consume/default/@jupyterlab/apputils": () => (loadSingletonVersion("default", "@jupyterlab/apputils", false, [1,4,5,5])),
+/******/ 			"webpack/sharing/consume/default/@jupyterlab/ui-components": () => (loadSingletonVersion("default", "@jupyterlab/ui-components", false, [1,4,4,5]))
 /******/ 		};
 /******/ 		// no consumes in initial chunks
 /******/ 		var chunkMapping = {
-/******/ 			"webpack_sharing_consume_default_react": [
-/******/ 				"webpack/sharing/consume/default/react"
-/******/ 			],
 /******/ 			"lib_index_js": [
-/******/ 				"webpack/sharing/consume/default/@amphi/pipeline-components-manager",
 /******/ 				"webpack/sharing/consume/default/@jupyterlab/apputils",
-/******/ 				"webpack/sharing/consume/default/@jupyterlab/coreutils",
-/******/ 				"webpack/sharing/consume/default/@jupyterlab/filebrowser",
-/******/ 				"webpack/sharing/consume/default/@jupyterlab/ui-components",
-/******/ 				"webpack/sharing/consume/default/antd/antd"
-/******/ 			],
-/******/ 			"webpack_sharing_consume_default_react-dom": [
-/******/ 				"webpack/sharing/consume/default/react-dom"
+/******/ 				"webpack/sharing/consume/default/@jupyterlab/ui-components"
 /******/ 			]
 /******/ 		};
 /******/ 		var startedInstallModules = {};
@@ -499,7 +453,7 @@ __webpack_require__.d(exports, {
 /******/ 		// undefined = chunk not loaded, null = chunk preloaded/prefetched
 /******/ 		// [resolve, reject, Promise] = chunk loading, 0 = chunk loaded
 /******/ 		var installedChunks = {
-/******/ 			"@amphi/components-panel": 0
+/******/ 			"@amphi/theme-light": 0
 /******/ 		};
 /******/ 		
 /******/ 		__webpack_require__.f.j = (chunkId, promises) => {
@@ -511,7 +465,7 @@ __webpack_require__.d(exports, {
 /******/ 					if(installedChunkData) {
 /******/ 						promises.push(installedChunkData[2]);
 /******/ 					} else {
-/******/ 						if(!/^webpack_sharing_consume_default_react(|\-dom)$/.test(chunkId)) {
+/******/ 						if(true) { // all chunks have JS
 /******/ 							// setup Promise in chunk cache
 /******/ 							var promise = new Promise((resolve, reject) => (installedChunkData = installedChunks[chunkId] = [resolve, reject]));
 /******/ 							promises.push(installedChunkData[2] = promise);
@@ -536,7 +490,7 @@ __webpack_require__.d(exports, {
 /******/ 								}
 /******/ 							};
 /******/ 							__webpack_require__.l(url, loadingEnded, "chunk-" + chunkId, chunkId);
-/******/ 						} else installedChunks[chunkId] = 0;
+/******/ 						}
 /******/ 					}
 /******/ 				}
 /******/ 		};
@@ -576,14 +530,9 @@ __webpack_require__.d(exports, {
 /******/ 		
 /******/ 		}
 /******/ 		
-/******/ 		var chunkLoadingGlobal = self["webpackChunk_amphi_components_panel"] = self["webpackChunk_amphi_components_panel"] || [];
+/******/ 		var chunkLoadingGlobal = self["webpackChunk_amphi_theme_light"] = self["webpackChunk_amphi_theme_light"] || [];
 /******/ 		chunkLoadingGlobal.forEach(webpackJsonpCallback.bind(null, 0));
 /******/ 		chunkLoadingGlobal.push = webpackJsonpCallback.bind(null, chunkLoadingGlobal.push.bind(chunkLoadingGlobal));
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/nonce */
-/******/ 	(() => {
-/******/ 		__webpack_require__.nc = undefined;
 /******/ 	})();
 /******/ 	
 /************************************************************************/
@@ -591,9 +540,9 @@ __webpack_require__.d(exports, {
 /******/ 	// module cache are used so entry inlining is disabled
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
-/******/ 	var __webpack_exports__ = __webpack_require__("webpack/container/entry/@amphi/components-panel");
-/******/ 	(_JUPYTERLAB = typeof _JUPYTERLAB === "undefined" ? {} : _JUPYTERLAB)["@amphi/components-panel"] = __webpack_exports__;
+/******/ 	var __webpack_exports__ = __webpack_require__("webpack/container/entry/@amphi/theme-light");
+/******/ 	(_JUPYTERLAB = typeof _JUPYTERLAB === "undefined" ? {} : _JUPYTERLAB)["@amphi/theme-light"] = __webpack_exports__;
 /******/ 	
 /******/ })()
 ;
-//# sourceMappingURL=remoteEntry.42446e25fe172c361f58.js.map
+//# sourceMappingURL=remoteEntry.c56544b8a4f7c54dba91.js.map

@@ -3,7 +3,7 @@ var _JUPYTERLAB;
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "webpack/container/entry/@amphi/theme-light"
+/***/ "webpack/container/entry/@amphi/ui-component"
 /*!***********************!*\
   !*** container entry ***!
   \***********************/
@@ -15,6 +15,9 @@ var moduleMap = {
 	},
 	"./extension": () => {
 		return __webpack_require__.e("lib_index_js").then(() => (() => ((__webpack_require__(/*! ./lib/index.js */ "./lib/index.js")))));
+	},
+	"./style": () => {
+		return __webpack_require__.e("style_index_js").then(() => (() => ((__webpack_require__(/*! ./style/index.js */ "./style/index.js")))));
 	}
 };
 var get = (module, getScope) => {
@@ -60,7 +63,7 @@ __webpack_require__.d(exports, {
 /******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = __webpack_module_cache__[moduleId] = {
-/******/ 			// no module.id needed
+/******/ 			id: moduleId,
 /******/ 			// no module.loaded needed
 /******/ 			exports: {}
 /******/ 		};
@@ -127,7 +130,7 @@ __webpack_require__.d(exports, {
 /******/ 		// This function allow to reference async chunks
 /******/ 		__webpack_require__.u = (chunkId) => {
 /******/ 			// return url for filenames based on template
-/******/ 			return "" + chunkId + "." + "4c2b8d491628ca7eb53f" + ".js";
+/******/ 			return "" + chunkId + "." + {"lib_index_js":"3663f378227ed84db760","style_index_js":"f9710c360b2ca97eab26"}[chunkId] + ".js";
 /******/ 		};
 /******/ 	})();
 /******/ 	
@@ -151,7 +154,7 @@ __webpack_require__.d(exports, {
 /******/ 	/* webpack/runtime/load script */
 /******/ 	(() => {
 /******/ 		var inProgress = {};
-/******/ 		var dataWebpackPrefix = "@amphi/theme-light:";
+/******/ 		var dataWebpackPrefix = "@amphi/ui-component:";
 /******/ 		// loadScript function to load a script via script tag
 /******/ 		__webpack_require__.l = (url, done, key, chunkId) => {
 /******/ 			if(inProgress[url]) { inProgress[url].push(done); return; }
@@ -225,7 +228,7 @@ __webpack_require__.d(exports, {
 /******/ 			var warn = (msg) => {
 /******/ 				if (typeof console !== "undefined" && console.warn) console.warn(msg);
 /******/ 			};
-/******/ 			var uniqueName = "@amphi/theme-light";
+/******/ 			var uniqueName = "@amphi/ui-component";
 /******/ 			var register = (name, version, factory, eager) => {
 /******/ 				var versions = scope[name] = scope[name] || {};
 /******/ 				var activeVersion = versions[version];
@@ -245,7 +248,7 @@ __webpack_require__.d(exports, {
 /******/ 			var promises = [];
 /******/ 			switch(name) {
 /******/ 				case "default": {
-/******/ 					register("@amphi/theme-light", "0.1.0", () => (__webpack_require__.e("lib_index_js").then(() => (() => (__webpack_require__(/*! ./lib/index.js */ "./lib/index.js"))))));
+/******/ 					register("@amphi/ui-component", "0.1.0", () => (__webpack_require__.e("lib_index_js").then(() => (() => (__webpack_require__(/*! ./lib/index.js */ "./lib/index.js"))))));
 /******/ 				}
 /******/ 				break;
 /******/ 			}
@@ -402,14 +405,30 @@ __webpack_require__.d(exports, {
 /******/ 		});
 /******/ 		var installedModules = {};
 /******/ 		var moduleToHandlerMapping = {
-/******/ 			"webpack/sharing/consume/default/@jupyterlab/apputils": () => (loadSingletonVersion("default", "@jupyterlab/apputils", false, [1,4,6,3])),
-/******/ 			"webpack/sharing/consume/default/@jupyterlab/ui-components": () => (loadSingletonVersion("default", "@jupyterlab/ui-components", false, [1,4,5,3]))
+/******/ 			"webpack/sharing/consume/default/@jupyterlab/application": () => (loadSingletonVersion("default", "@jupyterlab/application", false, [1,4,4,5])),
+/******/ 			"webpack/sharing/consume/default/@jupyterlab/apputils": () => (loadSingletonVersion("default", "@jupyterlab/apputils", false, [1,4,5,5])),
+/******/ 			"webpack/sharing/consume/default/@jupyterlab/filebrowser": () => (loadSingletonVersion("default", "@jupyterlab/filebrowser", false, [1,4,4,5])),
+/******/ 			"webpack/sharing/consume/default/@jupyterlab/launcher": () => (loadSingletonVersion("default", "@jupyterlab/launcher", false, [1,4,4,5])),
+/******/ 			"webpack/sharing/consume/default/@jupyterlab/mainmenu": () => (loadSingletonVersion("default", "@jupyterlab/mainmenu", false, [1,4,4,5])),
+/******/ 			"webpack/sharing/consume/default/@jupyterlab/translation": () => (loadSingletonVersion("default", "@jupyterlab/translation", false, [1,4,4,5])),
+/******/ 			"webpack/sharing/consume/default/@jupyterlab/ui-components": () => (loadSingletonVersion("default", "@jupyterlab/ui-components", false, [1,4,4,5])),
+/******/ 			"webpack/sharing/consume/default/@lumino/algorithm": () => (loadSingletonVersion("default", "@lumino/algorithm", false, [1,2,0,0])),
+/******/ 			"webpack/sharing/consume/default/@lumino/widgets": () => (loadSingletonVersion("default", "@lumino/widgets", false, [1,2,3,1,,"alpha",0])),
+/******/ 			"webpack/sharing/consume/default/react": () => (loadSingletonVersion("default", "react", false, [1,18,2,0]))
 /******/ 		};
 /******/ 		// no consumes in initial chunks
 /******/ 		var chunkMapping = {
 /******/ 			"lib_index_js": [
+/******/ 				"webpack/sharing/consume/default/@jupyterlab/application",
 /******/ 				"webpack/sharing/consume/default/@jupyterlab/apputils",
-/******/ 				"webpack/sharing/consume/default/@jupyterlab/ui-components"
+/******/ 				"webpack/sharing/consume/default/@jupyterlab/filebrowser",
+/******/ 				"webpack/sharing/consume/default/@jupyterlab/launcher",
+/******/ 				"webpack/sharing/consume/default/@jupyterlab/mainmenu",
+/******/ 				"webpack/sharing/consume/default/@jupyterlab/translation",
+/******/ 				"webpack/sharing/consume/default/@jupyterlab/ui-components",
+/******/ 				"webpack/sharing/consume/default/@lumino/algorithm",
+/******/ 				"webpack/sharing/consume/default/@lumino/widgets",
+/******/ 				"webpack/sharing/consume/default/react"
 /******/ 			]
 /******/ 		};
 /******/ 		var startedInstallModules = {};
@@ -453,7 +472,7 @@ __webpack_require__.d(exports, {
 /******/ 		// undefined = chunk not loaded, null = chunk preloaded/prefetched
 /******/ 		// [resolve, reject, Promise] = chunk loading, 0 = chunk loaded
 /******/ 		var installedChunks = {
-/******/ 			"@amphi/theme-light": 0
+/******/ 			"@amphi/ui-component": 0
 /******/ 		};
 /******/ 		
 /******/ 		__webpack_require__.f.j = (chunkId, promises) => {
@@ -530,9 +549,14 @@ __webpack_require__.d(exports, {
 /******/ 		
 /******/ 		}
 /******/ 		
-/******/ 		var chunkLoadingGlobal = self["webpackChunk_amphi_theme_light"] = self["webpackChunk_amphi_theme_light"] || [];
+/******/ 		var chunkLoadingGlobal = self["webpackChunk_amphi_ui_component"] = self["webpackChunk_amphi_ui_component"] || [];
 /******/ 		chunkLoadingGlobal.forEach(webpackJsonpCallback.bind(null, 0));
 /******/ 		chunkLoadingGlobal.push = webpackJsonpCallback.bind(null, chunkLoadingGlobal.push.bind(chunkLoadingGlobal));
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/nonce */
+/******/ 	(() => {
+/******/ 		__webpack_require__.nc = undefined;
 /******/ 	})();
 /******/ 	
 /************************************************************************/
@@ -540,9 +564,9 @@ __webpack_require__.d(exports, {
 /******/ 	// module cache are used so entry inlining is disabled
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
-/******/ 	var __webpack_exports__ = __webpack_require__("webpack/container/entry/@amphi/theme-light");
-/******/ 	(_JUPYTERLAB = typeof _JUPYTERLAB === "undefined" ? {} : _JUPYTERLAB)["@amphi/theme-light"] = __webpack_exports__;
+/******/ 	var __webpack_exports__ = __webpack_require__("webpack/container/entry/@amphi/ui-component");
+/******/ 	(_JUPYTERLAB = typeof _JUPYTERLAB === "undefined" ? {} : _JUPYTERLAB)["@amphi/ui-component"] = __webpack_exports__;
 /******/ 	
 /******/ })()
 ;
-//# sourceMappingURL=remoteEntry.249e82b880890b9b2b76.js.map
+//# sourceMappingURL=remoteEntry.368a6c8ebc5e307a15ce.js.map
