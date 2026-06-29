@@ -83,7 +83,7 @@
     "extension": true,
     "outputDir": "../../amphi/ui-component",
     "_build": {
-      "load": "static\\remoteEntry.368a6c8ebc5e307a15ce.js",
+      "load": "static\\remoteEntry.0b41a2cdf070cde8fd0f.js",
       "extension": "./extension",
       "style": "./style"
     }

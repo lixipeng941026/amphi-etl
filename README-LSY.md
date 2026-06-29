@@ -35,6 +35,16 @@ Remove-Item -Recurse -Force node_modules, yarn.lock, packages\*\node_modules, pa
 
 .\amphi_venv\Scripts\Activate.ps1
 
+pip install amphi-etl
+
+cd .\amphi-etl
+
+jlpm install
+
+jlpm build
+
+cd ../
+
 cd .\jupyterlab-amphi
 
 jlpm install
@@ -43,9 +53,8 @@ jlpm build
 
 python -m pip install .
 
-cd .\amphi-etl
 
-python -c "from amphi.main import main; main()" start -w .\workspace
+python -c "from amphi.main import main; main()" start -w ..\workspace
 
 
 

@@ -79,7 +79,7 @@
     "themePath": "style/index.css",
     "outputDir": "../../amphi/theme-light",
     "_build": {
-      "load": "static\\remoteEntry.c56544b8a4f7c54dba91.js",
+      "load": "static\\remoteEntry.249e82b880890b9b2b76.js",
       "extension": "./extension"
     }
   }
