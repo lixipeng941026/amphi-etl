@@ -36,6 +36,8 @@ Remove-Item -Recurse -Force node_modules, yarn.lock, packages\*\node_modules, pa
 cd D:\Code\Etl
   .\amphi_venv\Scripts\Activate.ps1
 
+cd D:\Code\etl\jupyterlab-amphi
+
 jlpm install
 
 jlpm build

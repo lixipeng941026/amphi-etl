@@ -4,11 +4,6 @@
 *.ipynb
 .jupyter_ystore.db
 .venv
-.amphi_venv
-# Python 虚拟环境
-amphi_venv/
-venv/
-.env/
 
 # Python 缓存
 __pycache__/
